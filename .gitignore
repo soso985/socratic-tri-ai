@@ -1,0 +1,10 @@
+# 工作目录（PDF 转写、图表生成脚本、核对报告）—— 不纳入版本库
+_extract/
+
+# 图表中间产物（正式图表在 思维导图/）
+*.tmp
+
+# 系统文件
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1460" viewBox="0 0 1320 1460">
+<defs><marker id="ar0" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#475569"/></marker><marker id="ar1" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#34D399"/></marker><marker id="ar2" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#6366F1"/></marker><marker id="ar3" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#F59E0B"/></marker><marker id="ar4" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#2563EB"/></marker><marker id="ar5" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#000000"/></marker><marker id="ar6" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#000000"/></marker><marker id="ar7" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#000000"/></marker><marker id="ar8" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#000000"/></marker><marker id="ar9" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#000000"/></marker></defs>
+<rect width="1320" height="1460" fill="#F8FAFC"/>
+<text x="60" y="60" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="25" font-weight="700" fill="#0F172A">技术异议全流程（V1.4 新增机制）</text>
+<text x="60" y="90" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#64748B">Executor 提出 → 任务 BLOCKED → 自动登记 → 双判定 → 程序比对 → 留痕 → 验收复核</text>
+<rect x="60" y="150" width="760" height="86" rx="11" fill="#D1FAE5" stroke="#047857" stroke-width="2.2"/>
+<circle cx="90" cy="179" r="16" fill="#047857"/>
+<text x="90" y="185" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+<text x="118" y="185" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#047857">触发</text>
+<text x="118" y="212" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">Executor 判定"决策前提有问题"（允许），或判定"无法执行"（必须）。</text>
+<rect x="60" y="270" width="760" height="86" rx="11" fill="#D1FAE5" stroke="#047857" stroke-width="2.2"/>
+<circle cx="90" cy="299" r="16" fill="#047857"/>
+<text x="90" y="305" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+<text x="118" y="305" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#047857">提交技术异议 → 任务立即 BLOCKED</text>
+<text x="118" y="332" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">未获 Mentor 回应前不得继续执行（§8.4）。有异议权，无更改权。</text>
+<rect x="60" y="390" width="760" height="86" rx="11" fill="#E2E8F0" stroke="#334155" stroke-width="2.2"/>
+<circle cx="90" cy="419" r="16" fill="#334155"/>
+<text x="90" y="425" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+<text x="118" y="425" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#334155">确定性程序自动登记</text>
+<text x="118" y="452" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">由程序捕获，不由人填写 —— 使"漏登"在机制上不可能发生（§8.6）。</text>
+<rect x="60" y="520" width="760" height="110" rx="11" fill="#DBEAFE" stroke="#1D4ED8" stroke-width="2.2"/>
+<circle cx="90" cy="549" r="16" fill="#1D4ED8"/>
+<text x="90" y="555" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+<text x="118" y="555" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#1D4ED8">双判定：Mentor 与 Controller 各判一次</text>
+<text x="118" y="582" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">判定对象仅为"是否达到升级阈值"，不判异议在技术上是否成立。双方独立判定、互不可见结论，</text>
+<text x="118" y="606" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">依同一张 7 条共用尺子（§8.5）。</text>
+<rect x="60" y="664" width="760" height="64" rx="11" fill="#F1F5F9" stroke="#0F172A" stroke-width="2.2"/>
+<circle cx="90" cy="693" r="16" fill="#0F172A"/>
+<text x="90" y="699" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+<text x="118" y="699" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#0F172A">程序比对两者结论</text>
+<rect x="60" y="750" width="300" height="104" rx="10" fill="#FEF3C7" stroke="#B45309" stroke-width="2"/>
+<text x="210.0" y="782" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="16.5" font-weight="700" fill="#B45309" text-anchor="middle">均判"重大"</text>
+<text x="210.0" y="808" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#334155" text-anchor="middle">升级 Owner → §6.1 一级快速决策</text>
+<rect x="380" y="750" width="300" height="104" rx="10" fill="#E2E8F0" stroke="#64748B" stroke-width="2"/>
+<text x="530.0" y="782" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="16.5" font-weight="700" fill="#64748B" text-anchor="middle">均判"不重大"</text>
+<text x="530.0" y="808" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#334155" text-anchor="middle">按原决策继续执行；异议就地封闭，但已强</text>
+<text x="530.0" y="829" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#334155" text-anchor="middle">制留痕</text>
+<rect x="700" y="750" width="300" height="104" rx="10" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+<text x="850.0" y="782" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="16.5" font-weight="700" fill="#DC2626" text-anchor="middle">判定分歧</text>
+<text x="850.0" y="808" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#334155" text-anchor="middle">交 Owner 裁决</text>
+<rect x="60" y="888" width="760" height="86" rx="11" fill="#DBEAFE" stroke="#1D4ED8" stroke-width="2.2"/>
+<circle cx="90" cy="917" r="16" fill="#1D4ED8"/>
+<text x="90" y="923" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+<text x="118" y="923" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#1D4ED8">Mentor 出具书面回应</text>
+<text x="118" y="950" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">载明技术理由与处置结论；不得以沉默方式关闭异议（§8.4）。</text>
+<rect x="60" y="1008" width="760" height="110" rx="11" fill="#E2E8F0" stroke="#334155" stroke-width="2.2"/>
+<circle cx="90" cy="1037" r="16" fill="#334155"/>
+<text x="90" y="1043" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
+<text x="118" y="1043" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#334155">强制留痕</text>
+<text x="118" y="1070" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">异议全文与 Mentor 回应 → proposals/ ；索引登记 §11.1 影响清单。无论判定结果如何都</text>
+<text x="118" y="1094" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">执行（§8.6）。</text>
+<rect x="60" y="1152" width="760" height="110" rx="11" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2.2"/>
+<circle cx="90" cy="1181" r="16" fill="#7C3AED"/>
+<text x="90" y="1187" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">8</text>
+<text x="118" y="1187" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#7C3AED">显式复核一次</text>
+<text x="118" y="1214" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">§9 独立验收 + §13 里程碑集成：Controller 复核形式（是否被处置、有理由、已登记），</text>
+<text x="118" y="1238" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">Mentor 复核实质并署名（§8.6）。</text>
+<rect x="60" y="1296" width="760" height="110" rx="11" fill="#FEE2E2" stroke="#DC2626" stroke-width="2.2"/>
+<circle cx="90" cy="1325" r="16" fill="#DC2626"/>
+<text x="90" y="1331" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">9</text>
+<text x="118" y="1331" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="17" font-weight="700" fill="#DC2626">全程默认暂停</text>
+<text x="118" y="1358" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">等待用户决策期间（含分歧待裁决、用户离线、模型不可用、异议未获回应）：不自动放行、不</text>
+<text x="118" y="1382" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#334155">降级为单方决策（§6.5、§10.2-37）。</text>
+<path d="M160 236 L160 270" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 356 L160 390" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 476 L160 510" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 620 L160 654" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 718 L160 752" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M240 718 C 240 738, 250 726, 250 742" fill="none" stroke="#475569" stroke-width="2.4" marker-end="url(#am0)"/>
+<path d="M240 718 C 240 738, 570 726, 570 742" fill="none" stroke="#475569" stroke-width="2.4" marker-end="url(#am0)"/>
+<path d="M240 718 C 240 738, 890 726, 890 742" fill="none" stroke="#475569" stroke-width="2.4" marker-end="url(#am0)"/>
+<path d="M240 846 L240 880" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 966 L160 1000" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 1110 L160 1144" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 1254 L160 1288" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<path d="M160 1398 L160 1432" fill="none" stroke="#475569" stroke-width="2.6" marker-end="url(#am0)"/>
+<text x="60" y="1446" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#94A3B8">依据：三 AI 自主项目开发系统 · 总体设计说明书 V1.4　§x.y 为条款编号；判定结果三种情形均须留痕与复核。</text>
+</svg>

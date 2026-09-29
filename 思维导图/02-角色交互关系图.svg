@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="1240" viewBox="0 0 1560 1240">
+<defs><marker id="ar0" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#B45309"/></marker><marker id="ar1" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1D4ED8"/></marker><marker id="ar2" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#7C3AED"/></marker><marker id="ar3" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#047857"/></marker><marker id="ar4" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#334155"/></marker></defs>
+<rect width="1560" height="1240" fill="#F8FAFC"/>
+<text x="46" y="56" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="25" font-weight="700" fill="#0F172A">三 AI 自主项目开发系统 V1.4 · 角色交互关系图</text>
+<text x="46" y="84" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="15" fill="#64748B">实线 = 角色间交互；虚线 = 确定性控制程序对各方的程序化约束（不可绕过）</text>
+<rect x="580.0" y="574.0" width="400" height="132" rx="16" fill="#334155"/>
+<text x="780.0" y="608" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">确定性控制程序</text>
+<text x="780.0" y="634" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#CBD5E1" text-anchor="middle">门禁校验 §10.2（31—37）</text>
+<text x="780.0" y="657" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#CBD5E1" text-anchor="middle">异议自动登记 §8.6</text>
+<text x="780.0" y="680" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#CBD5E1" text-anchor="middle">双判定比对 §8.5</text>
+<text x="780.0" y="703" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#CBD5E1" text-anchor="middle">审计日志 · 路径白名单</text>
+<rect x="580.0" y="118" width="400" height="104" rx="13" fill="#FEF3C7" stroke="#B45309" stroke-width="2.4"/>
+<text x="780.0" y="152" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="19" font-weight="700" fill="#B45309" text-anchor="middle">用户 / Owner</text>
+<text x="780.0" y="174" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">最终决定权 · 重大取舍 · 超授权变更</text>
+<text x="780.0" y="194" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">裁决判定分歧 · 实物验收</text>
+<rect x="120" y="452" width="380" height="108" rx="13" fill="#DBEAFE" stroke="#1D4ED8" stroke-width="2.4"/>
+<text x="310.0" y="486" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="19" font-weight="700" fill="#1D4ED8" text-anchor="middle">Mentor / 指导老师</text>
+<text x="310.0" y="508" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">技术唯一负责 · 架构 · 契约签发</text>
+<text x="310.0" y="528" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">独立验收 · 重大性判定</text>
+<rect x="1060" y="452" width="380" height="108" rx="13" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2.4"/>
+<text x="1250.0" y="486" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="19" font-weight="700" fill="#7C3AED" text-anchor="middle">Controller / 调度监管</text>
+<text x="1250.0" y="508" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">完整性审计 · 调度 · 证据检查</text>
+<text x="1250.0" y="528" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">重大性判定 · 不判技术</text>
+<rect x="590.0" y="980" width="380" height="108" rx="13" fill="#D1FAE5" stroke="#047857" stroke-width="2.4"/>
+<text x="780.0" y="1014" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="19" font-weight="700" fill="#047857" text-anchor="middle">Executor / 执行工程师</text>
+<text x="780.0" y="1036" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">按契约实施 · 真实报告</text>
+<text x="780.0" y="1056" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" fill="#475569" text-anchor="middle">RFC · 技术异议</text>
+<path d="M630.0 222 C 520.0 300, 310 380, 300 452" fill="none" stroke="#1D4ED8" stroke-width="2.6" marker-end="url(#ar1)"/>
+<path d="M 372 452 C 400 386, 560.0 320, 594.0 222" fill="none" stroke="#B45309" stroke-width="2.6" marker-end="url(#ar0)"/>
+<rect x="118.35" y="315" width="227.3" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="232" y="330" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#B45309" text-anchor="middle">宪章 · 取舍 · 裁决 · 坚持执行</text>
+<rect x="361.45" y="315" width="181.1" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="452" y="330" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#1D4ED8" text-anchor="middle">苏格拉底提问 · 反对意见</text>
+<rect x="360.05" y="341" width="183.9" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="452" y="356" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#1D4ED8" text-anchor="middle">升级请求 · §13 必答结论</text>
+<path d="M930.0 222 C 1040.0 300, 1250 380, 1260 452" fill="none" stroke="#7C3AED" stroke-width="2.6" marker-end="url(#ar2)"/>
+<path d="M 1188 452 C 1160 386, 1000.0 320, 966.0 222" fill="none" stroke="#B45309" stroke-width="2.6" marker-end="url(#ar0)"/>
+<rect x="1251.45" y="315" width="153.1" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="1328" y="330" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#7C3AED" text-anchor="middle">判定分歧 · 均判重大</text>
+<rect x="1249.35" y="341" width="157.3" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="1328" y="356" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#7C3AED" text-anchor="middle">→ 升级交 Owner 裁决</text>
+<rect x="1033.9" y="315" width="148.20000000000002" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="1108" y="330" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#B45309" text-anchor="middle">知情 · 确认 · 中止</text>
+<path d="M 500 494 L 1060 494" fill="none" stroke="#0F172A" stroke-width="2.8" marker-end="url(#ar2)"/>
+<path d="M 1060 528 L 500 528" fill="none" stroke="#0F172A" stroke-width="2.8" marker-end="url(#ar1)"/>
+<rect x="582.8625" y="455" width="394.275" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="780.0" y="470" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" font-weight="700" fill="#0F172A" text-anchor="middle">重大性判定：各判一次 · 互不可见 · 依同一张 7 条清单</text>
+<rect x="615.125" y="541" width="329.75" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="780.0" y="556" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" font-weight="400" fill="#0F172A" text-anchor="middle">阻断须附规则编号与证据 · Mentor 可提交反证</text>
+<path d="M 300 565 C 300 800, 560 880, 650 980" fill="none" stroke="#1D4ED8" stroke-width="2.6" marker-end="url(#ar1)"/>
+<path d="M 735 980 C 700 860, 385 800, 385 565" fill="none" stroke="#047857" stroke-width="2.6" marker-end="url(#ar3)"/>
+<rect x="264.0" y="697" width="116.0" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="322" y="712" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#1D4ED8" text-anchor="middle">版本化任务契约</text>
+<rect x="629.9" y="727" width="120.20000000000002" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="690" y="742" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#047857" text-anchor="middle">RFC · 工作报告</text>
+<rect x="613.45" y="753" width="153.1" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="690" y="768" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#047857" text-anchor="middle">技术异议 · 书面回应</text>
+<path d="M 1260 565 C 1260 800, 990 880, 880 980" fill="none" stroke="#7C3AED" stroke-width="2.6" marker-end="url(#ar2)"/>
+<rect x="1050.9" y="785" width="218.20000000000002" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="1160" y="800" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" font-weight="400" fill="#7C3AED" text-anchor="middle">调度 · 阻断 · 证据与权限检查</text>
+<path d="M710.0 574.0 L710.0 222" fill="none" stroke="#334155" stroke-width="2.2" stroke-dasharray="8 6" marker-end="url(#ar4)"/>
+<path d="M580.0 620 L 500 494" fill="none" stroke="#334155" stroke-width="2.2" stroke-dasharray="8 6" marker-end="url(#ar4)"/>
+<path d="M980.0 620 L 1060 494" fill="none" stroke="#334155" stroke-width="2.2" stroke-dasharray="8 6" marker-end="url(#ar4)"/>
+<path d="M850.0 706.0 L850.0 980" fill="none" stroke="#334155" stroke-width="2.2" stroke-dasharray="8 6" marker-end="url(#ar4)"/>
+<rect x="546.6125" y="841" width="466.775" height="22" rx="5" fill="#FFFFFF" fill-opacity="0.94"/><text x="780.0" y="856" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14.5" font-weight="400" fill="#334155" text-anchor="middle">程序化约束不可绕过：门禁 · 自动登记 · 比对留档 · 状态跃迁校验</text>
+<text x="46" y="1200" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#64748B">依据：三 AI 自主项目开发系统 · 总体设计说明书 V1.4（SPEC-V1.4-20260929）</text>
+<text x="46" y="1222" font-family="'Microsoft YaHei','微软雅黑',sans-serif" font-size="14" fill="#94A3B8">等待用户决策期间（含分歧待裁决、用户离线、模型不可用、异议未获回应），受影响任务一律保持暂停，不自动放行（§6.5）。</text>
+</svg>
