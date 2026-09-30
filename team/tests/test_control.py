@@ -546,7 +546,7 @@ def test_mentor_response_registered_even_when_objection_judged_minor(isolated_da
     """§8.6：异议被判「不重大」时，回应仍必须登记（留痕不因结果而豁免）。"""
     obj_id = _submit()["obj_id"]
     _open_both(obj_id, major_mentor=False, major_controller=False)
-    assert dual_judge.compare(obj_id) == {"outcome": "both_minor", "escalate": False}
+    assert _outcome(dual_judge.compare(obj_id)) == {"outcome": "both_minor", "escalate": False}
 
     registered = objection.register_mentor_response(obj_id, "判定不重大，回应仍登记。")
     assert registered["mentor_response_registered"] is True
@@ -584,6 +584,27 @@ def _open_both(obj_id, *, major_mentor=True, major_controller=True, rules_mentor
     dual_judge.seal_verdict("controller", obj_id, _verdict(major_controller, rules_controller))
     dual_judge.reveal_verdict("mentor", obj_id, _verdict(major_mentor, rules_mentor))
     dual_judge.reveal_verdict("controller", obj_id, _verdict(major_controller, rules_controller))
+
+
+def _outcome(result):
+    """只取 compare() 的既有语义字段（task-10 起返回值会**追加**规则凭证相关字段）。"""
+    return {key: result[key] for key in ("outcome", "escalate")}
+
+
+def _cred_dir(root):
+    return root / "agent_state" / "rule_credentials"
+
+
+def _credentials(root):
+    directory = _cred_dir(root)
+    return sorted(directory.glob("*.json")) if directory.is_dir() else []
+
+
+def _set_task_status(root, status, task_id="TASK-001"):
+    path = root / "agent_state" / "task_state.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["tasks"][task_id]["status"] = status
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def test_seal_writes_only_commitment_and_no_plaintext(isolated_data_root):
@@ -699,7 +720,7 @@ def test_reveal_is_idempotent(isolated_data_root):
     dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))
     dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))   # 幂等
     dual_judge.reveal_verdict("controller", obj_id, _verdict(True, (1,)))
-    assert dual_judge.compare(obj_id) == {"outcome": "both_major", "escalate": True}
+    assert _outcome(dual_judge.compare(obj_id)) == {"outcome": "both_major", "escalate": True}
 
 
 def test_reseal_is_rejected(isolated_data_root):
@@ -721,19 +742,19 @@ def test_sealed_verdict_is_also_incomplete_judgment(isolated_data_root):
 def test_compare_both_major_escalates():
     obj_id = _submit()["obj_id"]
     _open_both(obj_id, major_mentor=True, major_controller=True)
-    assert dual_judge.compare(obj_id) == {"outcome": "both_major", "escalate": True}
+    assert _outcome(dual_judge.compare(obj_id)) == {"outcome": "both_major", "escalate": True}
 
 
 def test_compare_both_minor_does_not_escalate():
     obj_id = _submit()["obj_id"]
     _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
-    assert dual_judge.compare(obj_id) == {"outcome": "both_minor", "escalate": False}
+    assert _outcome(dual_judge.compare(obj_id)) == {"outcome": "both_minor", "escalate": False}
 
 
 def test_compare_divergent_escalates():
     obj_id = _submit()["obj_id"]
     _open_both(obj_id, major_mentor=True, major_controller=False)
-    assert dual_judge.compare(obj_id) == {"outcome": "divergent", "escalate": True}
+    assert _outcome(dual_judge.compare(obj_id)) == {"outcome": "divergent", "escalate": True}
 
 
 def test_opened_verdicts_are_written_to_separate_files(isolated_data_root):
@@ -783,6 +804,152 @@ def test_seal_rejects_malformed_verdict():
 def test_compare_rejects_empty_obj_id():
     with pytest.raises(ValueError):
         dual_judge.compare("  ")
+
+
+# ------------------------------------------------ 规则凭证（task-10）
+
+
+def test_compare_issues_rule_credential_on_both_minor(isolated_data_root):
+    """both_minor + 任务非常用户裁决 → 签发一次性规则凭证。"""
+    obj_id = _submit()["obj_id"]          # objection.submit 会把任务置为 BLOCKED
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    result = dual_judge.compare(obj_id)
+
+    assert result["rule_credential"] is not None
+    cred_id = result["cred_id"]
+    assert re.fullmatch(r"RC-\d{8}-\d{3}", cred_id), cred_id
+    path = _cred_dir(isolated_data_root) / f"{obj_id}.{cred_id}.json"
+    assert path.exists()
+    record = json.loads(path.read_text(encoding="utf-8"))
+    for field in ("cred_id", "obj_id", "task_id", "basis", "outcome", "issued_at",
+                  "issued_by", "consumed"):
+        assert field in record, field
+    assert record["basis"] == "§8.5 both_minor"
+    assert record["issued_by"] == "dual_judge.compare"
+    assert record["consumed"] is False
+    assert record["obj_id"] == obj_id and record["task_id"] == "TASK-001"
+
+
+def test_compare_keeps_outcome_and_escalate_semantics(isolated_data_root):
+    """只追加字段：outcome / escalate 语义不变。"""
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    result = dual_judge.compare(obj_id)
+    assert result["outcome"] == "both_minor" and result["escalate"] is False
+    assert set(result) >= {"outcome", "escalate", "rule_credential", "cred_id",
+                           "rule_credential_skipped_reason"}
+
+
+def test_compare_does_not_issue_credential_on_both_major(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=True, major_controller=True)
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None and result["cred_id"] is None
+    assert "both_major" in result["rule_credential_skipped_reason"]
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_does_not_issue_credential_on_divergent(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=True, major_controller=False)
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert "divergent" in result["rule_credential_skipped_reason"]
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_does_not_issue_credential_when_awaiting_user_ruling(isolated_data_root):
+    """必测项：任务处于「等用户裁决」时，即便 both_minor 也不得签发。"""
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    _set_task_status(isolated_data_root, "等用户裁决")
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert "等用户裁决" in result["rule_credential_skipped_reason"]
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_credential_is_idempotent(isolated_data_root):
+    """幂等：同一 obj_id 已有未消费凭证时不得重复签发。"""
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    first = dual_judge.compare(obj_id)
+    second = dual_judge.compare(obj_id)
+    assert first["rule_credential"] is not None
+    assert second["rule_credential"] is None
+    assert "幂等" in second["rule_credential_skipped_reason"]
+    assert len(_credentials(isolated_data_root)) == 1
+
+
+def test_compare_issues_new_credential_after_previous_consumed(isolated_data_root):
+    """上一张已消费后，再次 both_minor 可以再签发（幂等只针对**未消费**凭证）。"""
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    first = dual_judge.compare(obj_id)
+    path = _cred_dir(isolated_data_root) / f"{obj_id}.{first['cred_id']}.json"
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["consumed"] = True
+    path.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+
+    second = dual_judge.compare(obj_id)
+    assert second["rule_credential"] is not None
+    assert second["cred_id"] != first["cred_id"]
+    assert len(_credentials(isolated_data_root)) == 2
+
+
+def test_compare_credential_fail_closed_when_obj_id_not_in_index(isolated_data_root):
+    """必测项：索引里查不到 obj_id → fail-closed，不签发。"""
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    index_path = isolated_data_root / "agent_state" / "objection_index.json"
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    index["objections"] = []
+    index_path.write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert "task_id" in result["rule_credential_skipped_reason"]
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_credential_fail_closed_when_index_corrupt(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    (isolated_data_root / "agent_state" / "objection_index.json").write_text("{ 坏掉的 JSON", encoding="utf-8")
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert "fail-closed" in result["rule_credential_skipped_reason"]
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_credential_fail_closed_when_state_file_missing(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    (isolated_data_root / "agent_state" / "task_state.json").unlink()
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert _credentials(isolated_data_root) == []
+
+
+def test_compare_credential_fail_closed_when_task_record_missing(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
+    path = isolated_data_root / "agent_state" / "task_state.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["tasks"] = {}
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is None
+    assert _credentials(isolated_data_root) == []
+
+
+def test_sealed_compare_issues_nothing(isolated_data_root):
+    """未开封时 compare 直接抛 SealedVerdict，自然不会签发任何凭证。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(False, ()))
+    with pytest.raises(SealedVerdict):
+        dual_judge.compare(obj_id)
+    assert _credentials(isolated_data_root) == []
 
 
 # ================================================================ audit_log

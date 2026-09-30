@@ -361,11 +361,22 @@ def read_verdict(role: str, obj_id: str) -> dict:
 
 
 def compare(obj_id: str) -> dict:
-    """**双份揭示都完成后**才比对，返回 ``{"outcome": ..., "escalate": ...}``。
+    """**双份揭示都完成后**才比对，返回 ``{"outcome": ..., "escalate": ...}``（可追加字段）。
 
     未开封 → :class:`SealedVerdict`。
     ``both_major`` / ``divergent`` → ``escalate=True``；``both_minor`` → ``escalate=False``。
     比对结果与双方原始结论一并留档。
+
+    **规则凭证（task-10 · Owner 直接指令，落实 GUARD-01 裁决 b）**：
+    仅当① ``outcome == "both_minor"``、②该异议所属任务的当前状态**不是**「等用户裁决」、
+    ③该 ``obj_id`` 名下**没有未消费**的规则凭证（幂等）——三条同时满足时，
+    在**本函数内部**签发一张一次性规则凭证（落 ``agent_state/rule_credentials/``），
+    并在返回值中**追加** ``rule_credential``（未签发时为 ``None``）、``cred_id``、
+    ``rule_credential_skipped_reason``。``outcome`` / ``escalate`` 的语义**未改变**。
+
+    ``obj_id → task_id`` 读自 ``objection_index.json``、``task_id → status`` 读自
+    ``task_state.json``（均**只读**）；解析不到 / 文件缺失 / JSON 损坏 →
+    **fail-closed，不签发**（宁可少发，不可错发）。
     """
     obj_id = _validate_obj_id(obj_id)
 
@@ -403,7 +414,106 @@ def compare(obj_id: str) -> dict:
         },
     )
 
-    return {"outcome": outcome, "escalate": escalate}
+    # ------------------------------------------------------------------
+    # 规则凭证（task-10 · Owner 直接指令；落实 GUARD-01 裁决 b）
+    #
+    # 签发条件（三条**同时**满足）：
+    #   ① outcome == "both_minor"；且
+    #   ② 该异议所属任务的当前状态**不是**「等用户裁决」；且
+    #   ③ 该 obj_id 名下**不存在未消费**的规则凭证（幂等，防反复 compare 刷凭证）。
+    #
+    # obj_id → task_id 从 objection_index.json **只读**解析；
+    # task_id → status 从 task_state.json **只读**解析；
+    # 解析不到 / 文件缺失 / JSON 损坏 → **fail-closed，不签发**（宁可少发，不可错发）。
+    #
+    # 本段全部**内联在 compare() 内部**：不新增函数（公开或私有都不加）、
+    # 不改 seal_verdict / reveal_verdict / read_verdict 的行为、不改动 outcome/escalate 语义。
+    # ------------------------------------------------------------------
+    rule_credential = None
+    credential_skipped = None
+    try:
+        _index_path = data_root() / "agent_state" / "objection_index.json"
+        _task_id = None
+        if _index_path.exists():
+            _index = json.loads(_index_path.read_text(encoding="utf-8"))
+            for _entry in (_index.get("objections") or []):
+                if isinstance(_entry, dict) and _entry.get("obj_id") == obj_id:
+                    _candidate = _entry.get("task_id")
+                    if isinstance(_candidate, str) and _candidate.strip():
+                        _task_id = _candidate.strip()
+                    break
+
+        _state_path = data_root() / "agent_state" / "task_state.json"
+        _status = None
+        if _task_id is not None and _state_path.exists():
+            _state = json.loads(_state_path.read_text(encoding="utf-8"))
+            _record = (_state.get("tasks") or {}).get(_task_id)
+            if isinstance(_record, dict):
+                _raw_status = _record.get("status")
+                if isinstance(_raw_status, str) and _raw_status.strip():
+                    _status = _raw_status.strip()
+
+        if outcome != "both_minor":
+            credential_skipped = f"比对结果 {outcome} 不签发规则凭证"
+        elif _task_id is None:
+            credential_skipped = "异议索引中解析不到该 obj_id 的 task_id（fail-closed）"
+        elif _status is None:
+            credential_skipped = f"解析不到任务 {_task_id} 的当前状态（fail-closed）"
+        elif _status == "等用户裁决":
+            credential_skipped = (
+                "任务处于「等用户裁决」：不得签发规则凭证，离开暂停仍须 Owner 批准记录"
+            )
+        else:
+            _cred_dir = data_root() / "agent_state" / "rule_credentials"
+            _pending = []
+            if _cred_dir.is_dir():
+                for _path in sorted(_cred_dir.glob(f"{obj_id}.*.json")):
+                    try:
+                        if json.loads(_path.read_text(encoding="utf-8")).get("consumed") is False:
+                            _pending.append(_path)
+                    except (OSError, ValueError):
+                        continue
+            if _pending:
+                credential_skipped = (
+                    f"该 obj_id 名下已有未消费凭证 {_pending[0].name}（幂等，不重复签发）"
+                )
+            else:
+                _date = compared_at[:10].replace("-", "")
+                _highest = 0
+                if _cred_dir.is_dir():
+                    for _path in _cred_dir.glob("*.json"):
+                        for _part in _path.stem.split("."):
+                            if _part.startswith(f"RC-{_date}-") and _part[len(f"RC-{_date}-"):].isdigit():
+                                _highest = max(_highest, int(_part[len(f"RC-{_date}-"):]))
+                _cred_id = f"RC-{_date}-{_highest + 1:03d}"
+                _payload = {
+                    "cred_id": _cred_id,
+                    "obj_id": obj_id,
+                    "task_id": _task_id,
+                    "kind": "rule_credential",
+                    "basis": "§8.5 both_minor",
+                    "outcome": outcome,
+                    "issued_at": compared_at,
+                    "issued_by": "dual_judge.compare",
+                    "consumed": False,
+                    "consumed_at": None,
+                    "task_status_at_issue": _status,
+                    "index_source": str(_index_path),
+                    "state_source": str(_state_path),
+                }
+                _save_json(_cred_dir / f"{obj_id}.{_cred_id}.json", _payload)
+                rule_credential = _payload      # 落盘成功后才认定"已签发"
+    except (OSError, ValueError, TypeError, KeyError) as _exc:  # fail-closed
+        rule_credential = None
+        credential_skipped = f"签发过程异常（fail-closed）：{type(_exc).__name__}: {_exc}"
+
+    return {
+        "outcome": outcome,
+        "escalate": escalate,
+        "rule_credential": rule_credential,        # 未签发时为 None
+        "cred_id": rule_credential["cred_id"] if rule_credential else None,
+        "rule_credential_skipped_reason": credential_skipped,
+    }
 
 
 def submit_verdict(role: str, obj_id: str, verdict: dict) -> dict:
