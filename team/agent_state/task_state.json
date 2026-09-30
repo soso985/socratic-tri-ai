@@ -4,9 +4,9 @@
     "TASK-001": {
       "status": "BLOCKED",
       "previous_status": null,
-      "contract_version": "v1",
-      "updated_at": "2026-09-30T08:40:52+08:00"
+      "contract_version": "v2",
+      "updated_at": "2026-09-30T12:30:11+08:00"
     }
   },
-  "updated_at": "2026-09-30T08:40:52+08:00"
+  "updated_at": "2026-09-30T12:30:11+08:00"
 }

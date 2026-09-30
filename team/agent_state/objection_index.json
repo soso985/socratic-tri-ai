@@ -21,7 +21,28 @@
       "mentor_response": "【Mentor 书面回应 · §8.4】异议成立，已受理并处置完毕。异议 ID：OBJ-20260930-001（backfill）\n\n一、结论：异议**成立**。Executor 判定「无法执行」正确，停止并留痕的行为符合 §8.4 强制触发条款。\n    两项主因（F-02 契约内部实质矛盾、契约未满足自述生效条件）经我独立复核，**属实**。\n\n二、技术理由：\n    1. F-02：TASK-001 v1 的 must_do#1（跃迁表「其余一律非法」）与 must_do#2（提交即无条件置 BLOCKED）\n       在同一动作上结论相反，不存在同时满足两条的实现。Executor 无权改契约文本（§2 禁止项\n       「以异议为由自行更改或搁置决策」），故其停止判定正确。\n    2. 根因不在契约，而在 **V1.4 基线自身**：§8.4 要求「异议提交即任务进入 BLOCKED（§10.1）」，\n       但 §10.1 的合法跃迁集合不含 READY/AUDITING/DRAFT → BLOCKED。此为**基线条文缺陷**。\n    3. F-01/F-03：属契约载明不全与上游记录缺失，同为我签发方的责任。\n\n三、处置（全部已执行，非口头承诺）：\n    1. **已登记基线缺陷 V1.4-ERR-01**（team/architecture/BASELINE-DEFECTS.md），\n       载明 §8.4 与 §10.1 的冲突、根因、处置与未决项（建议 V1.5 正式修订）。\n    2. **已签发 TASK-001 v2**，逐条闭合 CTRL-AUDIT-001 全部 9 项缺口：\n       F-01 唯一验收环境（指定解释器 + pytest 9.1.1 + 唯一测试命令）；\n       F-02 跃迁表补齐（DRAFT|AUDITING|READY→BLOCKED；BLOCKED→进入前状态），并要求实现注释引用 V1.4-ERR-01；\n       F-03 建立 team/charter/REQ-records.md，契约改为**引用** REQ-T1 而不再自标层级；\n       F-04 路径口径统一基址 E:\\Socratic_M；F-05 补 audit_log.py 交付物与验收项；\n       F-06 声明任务内 schema ≠ DEF-06；F-07 定义 G37 三个输入字段；\n       F-08 action_tags 改按 §12.2 枚举口径；F-09 声明 tests/ 非受保护验收测试、DEF-02 未关闭。\n    3. **已决定 v2 不重审**（team/evidence/mentor-v2-decision.md），理由：9 项均为载明性缺口，\n       未引入新技术内容；若每轮整改都再审计一轮，将与 §7.3「禁止制造大量无意义审批」相悖。\n       该决定可被 Controller 依 §2.2 提交反证推翻。\n    4. **新版本契约已交付并经我独立验收**：TASK-001 v2 六项 must_do 全部实现，74/74 测试通过（我亲自重跑复现）。\n\n四、对「偏差披露」的裁定：\n    - Executor 将异议写入 team/proposals/ —— 而 task-2 限定其只写三处。\n      **裁定：该偏差成立且必要，不予追究。** 理由：§8.6 要求异议强制留痕，而当时唯一合法的\n      留痕落点就是 proposals/；Executor 既无法自动登记（程序未交付）、又不愿放弃留痕，\n      且已显式披露。两难之下选择「留痕 + 披露」是正确的取舍。\n      同时记入程序偏差 D-P1（见下）。\n    - 该文件**予以保留**，不删除（§8.6 留痕不因结果豁免）。\n\n五、程序偏差登记 D-P1（须记录在案）：\n    §8.6 要求「异议提交动作即自动登记，由确定性程序捕获，**不由人填写**」。\n    本条异议**未满足**该要求——它提交于 objection.py 交付之前，无程序 ID，系手工留痕。\n    本次 backfill 由 Mentor 人工发起，**不构成自动登记**。\n    ⇒ 该偏差是「用待实现的规则去约束实现该规则的过程」这一时序问题所致，属一次性；\n      自 objection.py 交付起，此后所有异议均走程序自动登记。\n\n六、后续：本异议的「是否重大到必须升级 Owner」由 §8.5 双判定裁定（Mentor 与 Controller 各判一次、\n    互不可见），判定结果另附。",
       "mentor_response_at": "2026-09-30T08:40:52+08:00",
       "mentor_response_registered": true
+    },
+    {
+      "obj_id": "OBJ-20260930-002",
+      "task_id": "TASK-001",
+      "version": "v2",
+      "kind": "premise",
+      "kind_label": "前提有问题",
+      "claim": "【task-7 验证用异议 · 真实工作区】按 Owner 直接指令提交，用于验证『异议提交 → 任务进入暂停 → 对此后写入的拦截』整条链是否真的走通；本条**不对 TASK-001 v2 的技术前提作任何实质主张**。",
+      "evidence": "验证驱动脚本 team/tests/demo_objection_lockdown.py 及其真实输出 team/evidence/TASK-001-objection-lockdown.log（task-7）。",
+      "invalidates": [
+        "不主张任何已验收记录或里程碑结论失效（本条为验证用异议，非实质异议）；若被误当作实质异议处置，受影响的仅是 TASK-001 的执行状态，而非 §9.1 验收结论。"
+      ],
+      "invalidates_unknown": false,
+      "needs_mentor_verdict_plan": false,
+      "status": "BLOCKED",
+      "task_previous_status": null,
+      "submitted_at": "2026-09-30T12:30:11+08:00",
+      "record_path": "E:\\Socratic_M\\team\\proposals\\OBJ-20260930-002.md",
+      "mentor_response": "【Mentor 书面回应 · §8.4】异议已处置。异议 ID：OBJ-20260930-002\n\n一、性质认定：**该条为 task-7 链路验证产生的验证用异议，不是实质技术异议。**\n    Executor 已在异议正文标注「task-7 验证用异议…不对 TASK-001 v2 的技术前提作任何实质主张」，\n    并在 invalidates 中声明「不主张任何已验收记录或里程碑结论失效」（needs_mentor_verdict_plan=False）。\n    经我复核：该标注属实，未留假的待办标记。\n\n二、为何它仍是被真实登记的异议：\n    Owner 直接指令要求「执行者提交一条异议，之后再去改任务卡」，因此必须走真实的\n    objection.submit 通道——用假对象或绕过程序都会使验证失去意义。故本条记录**照常登记、照常回应**，\n    不因\"验证用\"而豁免（§8.6：留痕不因结果豁免）。\n\n三、技术理由（针对通道本身，而非 TASK-001 v2）：\n    1. 异议提交后，authoritative task_state.json 的 tasks.TASK-001.status 被置为 BLOCKED；\n    2. 随后对任务卡 milestones/M1/TASK-001-v2.md 的写入被 write_lock 拒绝；\n    3. 任务卡 SHA256 前后一致（0A5CFA758E1404A3…），字节数与 mtime 均未变。\n    这三步由 Executor 的 evidence/TASK-001-objection-lockdown.log 记录，并由我以\n    evidence/mentor-verify-lockdown.py 独立复现（16/16 PASS）——**含因果对照**：\n    隔离根 RUNNING 时同一路径可写 → 提交异议 → 同根同路径被拒。\n\n四、处置结论：**接受，不触发返工，不构成 §8.5 升级事由。**\n    本条不涉及 L0/L1 变更、不越 allowed_paths、不命中 §12.2、不超预算、不涉不可逆操作。\n\n五、由本条暴露的真实缺口（登记为 KIND-01）：\n    §8.4 的 kind 枚举只有 {premise, cannot_execute}，**没有\"验证/行政用途\"类别**。\n    Executor 为不违反接口约束只能选 premise，语义并不准确。\n    后果：今后每次链路自测都会往异议通道塞一条语义不符的记录，并触发我不必要的回应义务。\n    **建议**：为 kind 增加 `verification` 类别，或为链路自测另设通道。当前未擅自扩枚举。\n\n六、附带说明（登记为 TSV-01，低）：\n    本次 objection.submit(version=\"v2\") 使 task_state.json 的 contract_version 由 v1 覆写为 v2\n    （status 未变，仍为 BLOCKED）。Executor 按\"v1 已作废、当前生效为 v2\"填写，判断正确。\n    但该字段**每次异议都会被覆写**，若同一任务在不同契约版本下多次提异议，只保留最后一次——\n    属低severity 观察，登记备查。",
+      "mentor_response_at": "2026-09-30T12:31:15+08:00",
+      "mentor_response_registered": true
     }
   ],
-  "updated_at": "2026-09-30T08:40:52+08:00"
+  "updated_at": "2026-09-30T12:31:15+08:00"
 }

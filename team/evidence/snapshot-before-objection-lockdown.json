@@ -1,0 +1,30 @@
+{
+ "taken_at": "2026-09-30T12:29:02.341197+08:00",
+ "files": {
+  "lock": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\write_lock.py",
+   "sha256": "07f86240e13a65857ff6fd88de91333fdda031a109ff5da517168f776b1d07b7",
+   "bytes": 12628
+  },
+  "taskcard": {
+   "path": "E:\\Socratic_M\\team\\milestones\\M1\\TASK-001-v2.md",
+   "sha256": "0a5cfa758e1404a3ab267ed115ee4377d878a9df5566aba6a8a0409c43eaff77",
+   "bytes": 12574
+  },
+  "gate": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\gate.py",
+   "sha256": "2c778d3c89502589763554000c547bb851a2ea71c0e5d01a5e557d27ba53c98a",
+   "bytes": 15476
+  },
+  "objection": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\objection.py",
+   "sha256": "1328d36f847bbf9a3eb2e6fda2d58a8ac663dde173c6ebce4436874431426f09",
+   "bytes": 13557
+  },
+  "taskstate": {
+   "path": "E:\\Socratic_M\\team\\agent_state\\task_state.json",
+   "sha256": "81d427e8587c0b30f46fc297e23cca57ca93e560ec28a34e51a1da43b827e383",
+   "bytes": 272
+  }
+ }
+}
