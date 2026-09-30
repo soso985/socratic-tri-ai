@@ -1,0 +1,10 @@
+{
+  "approval_id": "APR-20260930-001",
+  "task_id": "TASK-001",
+  "approved_by": "Owner",
+  "approved_at": "2026-09-30T12:43:27+08:00",
+  "scope": "task-9 验证用（非真实授权）",
+  "statement": "【演示用 · 非真实授权】本条由 Executor 在 task-9 链路验证中生成，仅用于验证『有用户批准记录才可解暂停』这一机制；不代表 Owner 对 TASK-001 的任何实际批准，且已被一次性消费。",
+  "consumed": true,
+  "consumed_at": "2026-09-30T12:43:27+08:00"
+}

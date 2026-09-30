@@ -1,0 +1,40 @@
+{
+ "taken_at": "2026-09-30T12:40:56.922666+08:00",
+ "files": {
+  "V1_lock": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\write_lock.py",
+   "sha256": "07f86240e13a65857ff6fd88de91333fdda031a109ff5da517168f776b1d07b7",
+   "bytes": 12628
+  },
+  "V2_objection": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\objection.py",
+   "sha256": "1328d36f847bbf9a3eb2e6fda2d58a8ac663dde173c6ebce4436874431426f09",
+   "bytes": 13557
+  },
+  "V3_seal": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\dual_judge.py",
+   "sha256": "e6c2259abb1540a398b628089e6f3a57f41f61d03caa45f4de27f25062945e61",
+   "bytes": 15926
+  },
+  "gate": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\gate.py",
+   "sha256": "2c778d3c89502589763554000c547bb851a2ea71c0e5d01a5e557d27ba53c98a",
+   "bytes": 15476
+  },
+  "audit_log": {
+   "path": "E:\\Socratic_M\\team\\src\\control\\audit_log.py",
+   "sha256": "c7aab23807a6637b364bdbcc612d8a95503bfa868919f26617112542784473bc",
+   "bytes": 4484
+  },
+  "taskcard": {
+   "path": "E:\\Socratic_M\\team\\milestones\\M1\\TASK-001-v2.md",
+   "sha256": "0a5cfa758e1404a3ab267ed115ee4377d878a9df5566aba6a8a0409c43eaff77",
+   "bytes": 12574
+  },
+  "taskstate": {
+   "path": "E:\\Socratic_M\\team\\agent_state\\task_state.json",
+   "sha256": "ec2829b13b00ee56e1f944338f944d754f44814b5c9f09f3d5935fd2f1bf4b46",
+   "bytes": 272
+  }
+ }
+}

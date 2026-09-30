@@ -1,0 +1,309 @@
+###############################################################################
+# task-9 状态护栏演示日志（暂停免费 / 解暂停须凭用户批准记录）· Owner 直接指令
+# 背景：RES-01 —— 写锁把信任集中在 task_state.json，谁能改它谁就能自行解锁
+# 唯一解释器：C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+# 本文件按时间顺序由命令执行追加生成，未经人工编辑。
+###############################################################################
+
+===== SECTION 1 / S1–S6 状态护栏演示 · 2026-09-30T12:43:26+08:00 =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" "E:\Socratic_M\team\tests\demo_state_guard.py"
+=== task-9 · 状态护栏：暂停免费、解暂停须凭用户批准记录 ===
+解释器版本: 3.12.14
+任务 ID    : TASK-001
+运行环境   : 真实工作区 E:\Socratic_M\team
+
+==============================================================================
+S1 · 停在「等用户裁决」
+==============================================================================
+调整前状态      : BLOCKED
+set_paused 返回 : {"task_id": "TASK-001", "status": "等用户裁决", "previous_status": "BLOCKED"}
+读回权威文件    : 等用户裁决
+task_state.json : { "schema": "task-internal/v1", "tasks": { "TASK-001": { "status": "等用户裁决", "previous_status": "BLOCKED", "contract_version": "v2", "updated_at": "2026-09-30T12:43:27+08:00", "state_reason": "等待用户对 RES-01 护栏的裁决（task-9 演示）", "paused_at": "2026-09-30T12:43:27+08:00" } }, "updated_at": "2026-09-30T12:43:27+08:00" }
+文件 SHA256     : d5f3b8e717d406b9bfb42eee091ff89ef80e1d1f5648f4275c55b95d10d11fcc
+判定            : PASS —— 已停在暂停类且无需任何批准
+
+==============================================================================
+S2 · 无批准记录写交付物 → 拒绝 + 字节不变
+==============================================================================
+交付物（任务卡）: E:\Socratic_M\team\milestones\M1\TASK-001-v2.md
+改前 SHA256     : 0a5cfa758e1404a3ab267ed115ee4377d878a9df5566aba6a8a0409c43eaff77
+结果            : 抛出 WriteDenied
+异常信息        : 写入被拒绝：权威状态为 '等用户裁决'，不是 'RUNNING'；目标文件未被打开、未写入任何字节（E:\Socratic_M\team\milestones\M1\TASK-001-v2.md）。⚠ 状态只认权威文件 E:\Socratic_M\team\agent_state\task_state.json；task_id='TASK-001' 只用于选择读取哪条记录（选择器），不是状态断言。⚠ 调用方传入的 task_state={'status': 'RUNNING'} 已被**忽略**——状态只认权威文件，传入的 status/state/current_state 一律不参与判定。
+改后 SHA256     : 0a5cfa758e1404a3ab267ed115ee4377d878a9df5566aba6a8a0409c43eaff77
+前后完全相同    : True | mtime 未变: True
+判定            : PASS —— 无批准时交付物一个字节未变
+
+==============================================================================
+S3 · 程序自行解锁 → 拒绝 + 状态文件字节不变
+==============================================================================
+改前 task_state.json SHA256 : d5f3b8e717d406b9bfb42eee091ff89ef80e1d1f5648f4275c55b95d10d11fcc
+当前状态                    : 等用户裁决
+调用：request_transition('TASK-001', 'RUNNING')   ← 不带 approval_id
+结果            : 抛出 ApprovalRequired
+异常信息        : 从暂停类状态解暂停必须有用户批准记录：当前任务 TASK-001 处于暂停类，未提供 approval_id → 拒绝，且不写盘。
+改后 task_state.json SHA256 : d5f3b8e717d406b9bfb42eee091ff89ef80e1d1f5648f4275c55b95d10d11fcc
+前后完全相同                : True
+状态未变                    : True
+判定            : PASS —— 程序自身没有路径能无凭证解锁（连写都没写）
+
+==============================================================================
+S3-附 · 多跳绕过分析（本实现为何收紧触发条件）
+==============================================================================
+候选路径：BLOCKED → AUDITING → READY → RUNNING
+  §10.1 跃迁表判定 BLOCKED   → AUDITING  合法 = True
+  §10.1 跃迁表判定 AUDITING  → READY     合法 = True
+  §10.1 跃迁表判定 READY     → RUNNING   合法 = True
+若触发条件只取『当前 ∈ 暂停 且 目标 ∈ 可执行』：
+  · 第 1 跳 BLOCKED → AUDITING：落点 AUDITING 属**非**可执行类 → 无需批准
+  · 第 2、3 跳来源均非暂停类 → 同样无需批准
+  ⇒ 全程**没有任何批准记录**即可到达 RUNNING —— 击穿 Owner 的核心要求。
+本实现把触发条件放宽为『任何离开暂停类的跃迁』后：
+  第 1 跳结果   : 抛出 ApprovalRequired —— 路径在第一跳被截断
+判定            : PASS —— 多跳绕已被堵住
+
+==============================================================================
+S4 · 伪造批准人（approved_by='Mentor'）→ 拒绝且不落盘
+==============================================================================
+批准记录（前）  : []
+结果            : 抛出 InvalidApproval
+异常信息        : approved_by 必须恰为 'Owner'，收到 'Mentor' → 拒绝，且不落盘。
+批准记录（后）  : []
+是否有新文件落盘: False
+判定            : PASS —— 非 Owner 批准人被拒且未落盘
+
+==============================================================================
+S5 · 有 Owner 批准记录 → 放行（证明不是「一律拒绝」）
+==============================================================================
+批准的出具人    : Owner
+approval_id     : APR-20260930-001
+scope           : task-9 验证用（非真实授权）
+statement       : 【演示用 · 非真实授权】本条由 Executor 在 task-9 链路验证中生成，仅用于验证『有用户批准记录才可解暂停』这一机制；不代表 Owner 对 TASK-001 的任何实际批准，且已被一次性消费。
+记录文件        : E:\Socratic_M\team\agent_state\approvals\TASK-001.APR-20260930-001.json
+consumed（前）  : False
+
+当前状态        : 等用户裁决
+request_transition 返回: {"status": "RUNNING", "previous_status": "等用户裁决", "approval_required": true, "approval_id": "APR-20260930-001"}
+读回状态        : RUNNING
+consumed（后）  : True
+判定            : PASS —— 有批准记录时确实解暂停成功且凭证被消费
+
+==============================================================================
+S6 · 同一 approval_id 重放 → 拒绝（一次性）
+==============================================================================
+重新暂停后状态  : 等用户裁决
+task_state.json SHA256（前）: 10adaff8e9561253e37c598be843ae3b8b04218500ed31dea175d64ece81bcb9
+重放：request_transition('TASK-001', 'RUNNING', approval_id='APR-20260930-001')
+结果            : 抛出 ApprovalConsumed
+异常信息        : 批准记录 APR-20260930-001 已被消费（consumed:true，一次性凭证）→ 拒绝重放，且不写盘。
+task_state.json SHA256（后）: 10adaff8e9561253e37c598be843ae3b8b04218500ed31dea175d64ece81bcb9
+字节不变        : True
+判定            : PASS —— 一次性凭证不可重放
+
+==============================================================================
+收尾 · 演示结束后的真实状态
+==============================================================================
+TASK-001 当前状态: 等用户裁决 （暂停类 → 写入仍被拒绝）
+task_state.json  : { "schema": "task-internal/v1", "tasks": { "TASK-001": { "status": "等用户裁决", "previous_status": "RUNNING", "contract_version": "v2", "updated_at": "2026-09-30T12:43:27+08:00", "state_reason": "S6 重放测试前重新暂停", "paused_at": "2026-09-30T12:43:27+08:00", "approved_by": "Owner", "approval_id": "APR-20260930-001", "approval_scope": "task-9 验证用（非真实授权）" } }, "updated_at": "2026-09-30T12:43:27+08:00" }
+批准记录清单     : ['TASK-001.APR-20260930-001.json']
+说明             : S5 用过的那条批准记录已 consumed:true 且 statement 明确标注为
+                   「task-9 验证用 · 非真实授权」；演示结束时任务已回到暂停类。
+
+==============================================================================
+总判定
+==============================================================================
+PASS  S1 停在等用户裁决
+PASS  S2 无批准写交付物被拒且字节不变
+PASS  S3 程序自行解锁被拒且状态文件字节不变
+PASS  S3-附 多跳绕过已堵
+PASS  S4 伪造批准人被拒且不落盘
+PASS  S5 有批准记录则放行
+PASS  S6 凭证重放被拒
+总判定: PASS
+==============================================================================
+[exit code: 0]
+
+===== SECTION 2 / 全量测试套件（含新增 state_guard 测试） =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" -m pytest "E:\Socratic_M\team\tests" -v
+============================= test session starts =============================
+platform win32 -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+rootdir: E:\Socratic_M
+collecting ... collected 175 items
+
+team/tests/test_control.py::test_gate_valid_task_passes_with_no_hits PASSED [  0%]
+team/tests/test_control.py::test_g31_blocks_when_contract_not_approved PASSED [  1%]
+team/tests/test_control.py::test_g32_blocks_on_version_mismatch PASSED   [  1%]
+team/tests/test_control.py::test_g32_blocks_on_write_path_outside_allowed_paths PASSED [  2%]
+team/tests/test_control.py::test_g32_blocks_on_path_traversal_escape PASSED [  2%]
+team/tests/test_control.py::test_g32_accepts_absolute_path_inside_workspace PASSED [  3%]
+team/tests/test_control.py::test_g32_blocks_when_dependencies_not_met PASSED [  4%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[changes] PASSED [  4%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[test_evidence] PASSED [  5%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[risks] PASSED [  5%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[deviations] PASSED [  6%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[rollback] PASSED [  6%]
+team/tests/test_control.py::test_g33_blocks_empty_report_item PASSED     [  7%]
+team/tests/test_control.py::test_g33_accepts_chinese_report_keys PASSED  [  8%]
+team/tests/test_control.py::test_g33_blocks_acceptance_without_report PASSED [  8%]
+team/tests/test_control.py::test_g34_blocks_when_change_pending_affects_task PASSED [  9%]
+team/tests/test_control.py::test_g34_not_hit_when_change_does_not_affect_task PASSED [  9%]
+team/tests/test_control.py::test_g35_triggers_on_budget_exceeded PASSED  [ 10%]
+team/tests/test_control.py::test_g35_triggers_on_rework_over_limit PASSED [ 10%]
+team/tests/test_control.py::test_g35_not_hit_at_rework_equal_to_limit PASSED [ 11%]
+team/tests/test_control.py::test_g35_triggers_on_risk_over_threshold PASSED [ 12%]
+team/tests/test_control.py::test_g36_blocks_illegal_transition_submitted_to_running PASSED [ 12%]
+team/tests/test_control.py::test_g36_accepts_legal_transition_draft_to_auditing PASSED [ 13%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_ready_to_blocked PASSED [ 13%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_auditing_to_blocked PASSED [ 14%]
+team/tests/test_control.py::test_g36_accepts_blocked_returning_to_previous_state PASSED [ 14%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_it_could_not_come_from PASSED [ 15%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_conflicting_with_blocked_from PASSED [ 16%]
+team/tests/test_control.py::test_g36_transition_check_appends_audit_log PASSED [ 16%]
+team/tests/test_control.py::test_g37_blocks_when_awaiting_user_decision_and_not_paused PASSED [ 17%]
+team/tests/test_control.py::test_g37_not_hit_when_awaiting_user_decision_and_paused PASSED [ 17%]
+team/tests/test_control.py::test_g37_not_hit_when_paused_by_state_without_is_paused_flag PASSED [ 18%]
+team/tests/test_control.py::test_g37_not_hit_when_no_user_decision_pending PASSED [ 18%]
+team/tests/test_control.py::test_gate_rule_ids_cover_all_seven_gates PASSED [ 19%]
+team/tests/test_control.py::test_package_workspace_base_and_default_data_root_are_correct PASSED [ 20%]
+team/tests/test_control.py::test_gate_hits_are_ordered_and_reasons_match PASSED [ 20%]
+team/tests/test_control.py::test_gate_rejects_non_dict_task PASSED       [ 21%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_01 PASSED [ 21%]
+team/tests/test_control.py::test_g36_erratum_accepts_rework_to_running PASSED [ 22%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_ready PASSED [ 22%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_blocked PASSED [ 23%]
+team/tests/test_control.py::test_g36_erratum_transition_set_is_exactly_v2_plus_three PASSED [ 24%]
+team/tests/test_control.py::test_g36_erratum_does_not_liberalize_other_dead_ends PASSED [ 24%]
+team/tests/test_control.py::test_g36_erratum_keeps_submitted_to_running_illegal PASSED [ 25%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_02 PASSED [ 25%]
+team/tests/test_control.py::test_objection_id_is_generated_with_expected_format PASSED [ 26%]
+team/tests/test_control.py::test_objection_id_increments_per_submission PASSED [ 26%]
+team/tests/test_control.py::test_objection_id_cannot_be_supplied_externally PASSED [ 27%]
+team/tests/test_control.py::test_objection_submit_has_no_obj_id_parameter PASSED [ 28%]
+team/tests/test_control.py::test_objection_submit_sets_task_blocked PASSED [ 28%]
+team/tests/test_control.py::test_objection_submit_records_previous_status PASSED [ 29%]
+team/tests/test_control.py::test_objection_writes_record_into_proposals PASSED [ 29%]
+team/tests/test_control.py::test_objection_appends_index_entry PASSED    [ 30%]
+team/tests/test_control.py::test_objection_invalidates_unknown_sets_mentor_verdict_plan_flag PASSED [ 30%]
+team/tests/test_control.py::test_objection_invalidates_is_required PASSED [ 31%]
+team/tests/test_control.py::test_objection_kind_is_validated PASSED      [ 32%]
+team/tests/test_control.py::test_objection_rejects_empty_claim_or_evidence PASSED [ 32%]
+team/tests/test_control.py::test_objection_submit_appends_audit_log PASSED [ 33%]
+team/tests/test_control.py::test_mentor_response_is_registered PASSED    [ 33%]
+team/tests/test_control.py::test_mentor_response_registered_even_when_objection_judged_minor PASSED [ 34%]
+team/tests/test_control.py::test_register_mentor_response_requires_known_objection PASSED [ 34%]
+team/tests/test_control.py::test_register_mentor_response_rejects_empty_text PASSED [ 35%]
+team/tests/test_control.py::test_seal_writes_only_commitment_and_no_plaintext PASSED [ 36%]
+team/tests/test_control.py::test_read_verdict_denied_after_single_seal PASSED [ 36%]
+team/tests/test_control.py::test_read_verdict_denied_after_both_seals_without_reveal PASSED [ 37%]
+team/tests/test_control.py::test_compare_denied_after_single_seal PASSED [ 37%]
+team/tests/test_control.py::test_compare_denied_after_both_seals_without_reveal PASSED [ 38%]
+team/tests/test_control.py::test_reveal_denied_without_seal PASSED       [ 38%]
+team/tests/test_control.py::test_reveal_with_wrong_verdict_raises_mismatch_and_writes_no_plaintext PASSED [ 39%]
+team/tests/test_control.py::test_single_reveal_writes_no_plaintext PASSED [ 40%]
+team/tests/test_control.py::test_read_verdict_available_only_after_both_reveals PASSED [ 40%]
+team/tests/test_control.py::test_reveal_is_idempotent PASSED             [ 41%]
+team/tests/test_control.py::test_reseal_is_rejected PASSED               [ 41%]
+team/tests/test_control.py::test_sealed_verdict_is_also_incomplete_judgment PASSED [ 42%]
+team/tests/test_control.py::test_compare_both_major_escalates PASSED     [ 42%]
+team/tests/test_control.py::test_compare_both_minor_does_not_escalate PASSED [ 43%]
+team/tests/test_control.py::test_compare_divergent_escalates PASSED      [ 44%]
+team/tests/test_control.py::test_opened_verdicts_are_written_to_separate_files PASSED [ 44%]
+team/tests/test_control.py::test_comparison_is_archived_with_both_verdicts PASSED [ 45%]
+team/tests/test_control.py::test_submit_verdict_alias_now_seals_without_plaintext PASSED [ 45%]
+team/tests/test_control.py::test_seal_rejects_unknown_role PASSED        [ 46%]
+team/tests/test_control.py::test_seal_rejects_malformed_verdict PASSED   [ 46%]
+team/tests/test_control.py::test_compare_rejects_empty_obj_id PASSED     [ 47%]
+team/tests/test_control.py::test_audit_log_append_returns_hash_and_creates_file PASSED [ 48%]
+team/tests/test_control.py::test_audit_log_verify_true_for_untampered_event PASSED [ 48%]
+team/tests/test_control.py::test_audit_log_chains_prev_hash PASSED       [ 49%]
+team/tests/test_control.py::test_audit_log_verify_false_after_tamper PASSED [ 49%]
+team/tests/test_control.py::test_audit_log_verify_false_for_unknown_hash PASSED [ 50%]
+team/tests/test_control.py::test_audit_log_verify_false_when_log_missing PASSED [ 50%]
+team/tests/test_control.py::test_audit_log_append_rejects_non_dict PASSED [ 51%]
+team/tests/test_control.py::test_audit_log_append_is_append_only PASSED  [ 52%]
+team/tests/test_state_guard.py::test_set_paused_needs_no_approval PASSED [ 52%]
+team/tests/test_state_guard.py::test_set_paused_is_allowed_from_any_state PASSED [ 53%]
+team/tests/test_state_guard.py::test_set_paused_requires_reason PASSED   [ 53%]
+team/tests/test_state_guard.py::test_record_user_approval_writes_exact_fields PASSED [ 54%]
+team/tests/test_state_guard.py::test_record_user_approval_ids_increment PASSED [ 54%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[Mentor] PASSED [ 55%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[mentor] PASSED [ 56%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[Controller] PASSED [ 56%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[Executor] PASSED [ 57%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[owner] PASSED [ 57%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[OWNER] PASSED [ 58%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[system] PASSED [ 58%]
+team/tests/test_state_guard.py::test_forged_approver_is_rejected_and_nothing_is_written[] PASSED [ 59%]
+team/tests/test_state_guard.py::test_record_user_approval_rejects_empty_scope_or_statement PASSED [ 60%]
+team/tests/test_state_guard.py::test_record_user_approval_does_not_accept_caller_supplied_id PASSED [ 60%]
+team/tests/test_state_guard.py::test_no_path_to_executable_without_approval[READY] PASSED [ 61%]
+team/tests/test_state_guard.py::test_no_path_to_executable_without_approval[RUNNING] PASSED [ 61%]
+team/tests/test_state_guard.py::test_every_paused_state_requires_approval_for_running[AWAITING_USER_RULING] PASSED [ 62%]
+team/tests/test_state_guard.py::test_every_paused_state_requires_approval_for_running[BLOCKED] PASSED [ 62%]
+team/tests/test_state_guard.py::test_every_paused_state_requires_approval_for_running[ESCALATED] PASSED [ 63%]
+team/tests/test_state_guard.py::test_every_paused_state_requires_approval_for_running[\u7b49\u7528\u6237\u88c1\u51b3] PASSED [ 64%]
+team/tests/test_state_guard.py::test_leaving_pause_to_non_executable_also_requires_approval PASSED [ 64%]
+team/tests/test_state_guard.py::test_multi_hop_bypass_is_closed_end_to_end PASSED [ 65%]
+team/tests/test_state_guard.py::test_unknown_task_fails_closed PASSED    [ 65%]
+team/tests/test_state_guard.py::test_missing_approval_record_is_rejected PASSED [ 66%]
+team/tests/test_state_guard.py::test_approval_for_another_task_is_rejected PASSED [ 66%]
+team/tests/test_state_guard.py::test_approval_with_non_owner_author_in_record_is_rejected PASSED [ 67%]
+team/tests/test_state_guard.py::test_consumed_approval_cannot_be_replayed PASSED [ 68%]
+team/tests/test_state_guard.py::test_valid_approval_unlocks_paused_to_running PASSED [ 68%]
+team/tests/test_state_guard.py::test_valid_approval_unlocks_paused_to_ready PASSED [ 69%]
+team/tests/test_state_guard.py::test_approval_consumed_before_state_write PASSED [ 69%]
+team/tests/test_state_guard.py::test_normal_transition_needs_no_approval PASSED [ 70%]
+team/tests/test_state_guard.py::test_ready_to_running_needs_no_approval PASSED [ 70%]
+team/tests/test_state_guard.py::test_illegal_non_paused_transition_is_rejected PASSED [ 71%]
+team/tests/test_state_guard.py::test_unknown_target_state_is_rejected PASSED [ 72%]
+team/tests/test_state_guard.py::test_guard_table_matches_gate_for_all_non_paused_pairs PASSED [ 72%]
+team/tests/test_state_guard.py::test_state_writes_are_audited PASSED     [ 73%]
+team/tests/test_state_guard.py::test_denials_are_audited_without_touching_state PASSED [ 73%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_status_is_blocked PASSED [ 74%]
+team/tests/test_write_lock.py::test_lying_caller_is_denied PASSED        [ 74%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state0] PASSED [ 75%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state1] PASSED [ 76%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state2] PASSED [ 76%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[RUNNING] PASSED [ 77%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state4] PASSED [ 77%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_missing PASSED [ 78%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[{ this is not json] PASSED [ 78%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[] PASSED [ 79%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[[]] PASSED [ 80%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed["just a string"] PASSED [ 80%]
+team/tests/test_write_lock.py::test_denies_when_tasks_object_missing PASSED [ 81%]
+team/tests/test_write_lock.py::test_denies_when_task_id_not_in_authoritative_file PASSED [ 81%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record0] PASSED [ 82%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record1] PASSED [ 82%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record2] PASSED [ 83%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record3] PASSED [ 84%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record4] PASSED [ 84%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record5] PASSED [ 85%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[not-a-dict] PASSED [ 85%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[] PASSED [ 86%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[   ] PASSED [ 86%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[None] PASSED [ 87%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[123] PASSED [ 88%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[bad_task_id4] PASSED [ 88%]
+team/tests/test_write_lock.py::test_denial_never_opens_target PASSED     [ 89%]
+team/tests/test_write_lock.py::test_denial_creates_no_temp_file PASSED   [ 89%]
+team/tests/test_write_lock.py::test_denial_record_names_state_source_and_ignored_caller_value PASSED [ 90%]
+team/tests/test_write_lock.py::test_denial_message_states_caller_value_is_ignored PASSED [ 90%]
+team/tests/test_write_lock.py::test_denial_message_notes_when_no_caller_state_passed PASSED [ 91%]
+team/tests/test_write_lock.py::test_denial_records_accumulate_in_chain PASSED [ 92%]
+team/tests/test_write_lock.py::test_allows_when_authoritative_status_is_running PASSED [ 92%]
+team/tests/test_write_lock.py::test_caller_claiming_blocked_does_not_prevent_allowed_write PASSED [ 93%]
+team/tests/test_write_lock.py::test_task_id_selects_the_right_record PASSED [ 93%]
+team/tests/test_write_lock.py::test_allowed_write_uses_atomic_replace PASSED [ 94%]
+team/tests/test_write_lock.py::test_allowed_write_creates_missing_parent_directories PASSED [ 94%]
+team/tests/test_write_lock.py::test_allowed_write_accepts_bytes_content PASSED [ 95%]
+team/tests/test_write_lock.py::test_task_id_is_a_required_keyword PASSED [ 96%]
+team/tests/test_write_lock.py::test_read_authoritative_status_returns_running PASSED [ 96%]
+team/tests/test_write_lock.py::test_read_authoritative_status_raises_on_unusable_source PASSED [ 97%]
+team/tests/test_write_lock.py::test_state_source_path_matches_objection_convention PASSED [ 97%]
+team/tests/test_write_lock.py::test_exempt_comment_is_documented_in_source PASSED [ 98%]
+team/tests/test_write_lock.py::test_selector_vs_state_assertion_is_documented_in_source PASSED [ 98%]
+team/tests/test_write_lock.py::test_module_does_not_import_or_patch_other_writers PASSED [ 99%]
+team/tests/test_write_lock.py::test_other_modules_are_untouched_by_this_task PASSED [100%]
+
+============================= 175 passed in 1.15s =============================
+[exit code: 0]
