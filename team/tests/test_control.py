@@ -332,6 +332,79 @@ def test_gate_source_cites_baseline_defect_v1_4_err_01():
     assert "V1.4-ERR-01" in source
 
 
+# ================================================================ 勘误 01 · V1.4-ERR-02
+# 授权文件：team/milestones/M1/TASK-001-v2-ERRATUM-01.md（Owner 裁决 O-2：只补跃迁表）
+
+
+def test_g36_erratum_accepts_rework_to_running():
+    """勘误 2.2：``REWORK → RUNNING``（返工完成，§9.2/§9.3）为合法。"""
+    result = gate.check(_valid_task(current_state="REWORK", next_state="RUNNING"))
+    assert "G36" not in result["hits"], result["reasons"]
+
+
+def test_g36_erratum_accepts_escalated_to_ready():
+    """勘误 2.2：``ESCALATED → READY``（用户裁决继续，§6.1）为合法。"""
+    result = gate.check(_valid_task(current_state="ESCALATED", next_state="READY"))
+    assert "G36" not in result["hits"], result["reasons"]
+
+
+def test_g36_erratum_accepts_escalated_to_blocked():
+    """勘误 2.2：``ESCALATED → BLOCKED``（用户裁决暂停/需补条件，§6.5）为合法。"""
+    result = gate.check(_valid_task(current_state="ESCALATED", next_state="BLOCKED"))
+    assert "G36" not in result["hits"], result["reasons"]
+
+
+def test_g36_erratum_transition_set_is_exactly_v2_plus_three():
+    """范围证据：跃迁集合必须**恰好**等于 v2 原集合 + 勘误三条，一条不多、一条不少。"""
+    v2_set = {
+        ("DRAFT", "AUDITING"),
+        ("AUDITING", "READY"),
+        ("READY", "RUNNING"),
+        ("RUNNING", "SUBMITTED"),
+        ("SUBMITTED", "ACCEPTED"),
+        ("RUNNING", "REWORK"),
+        ("RUNNING", "BLOCKED"),
+        ("RUNNING", "CHANGE_PENDING"),
+        ("RUNNING", "ESCALATED"),
+        ("SUBMITTED", "REWORK"),
+        ("SUBMITTED", "BLOCKED"),
+        ("SUBMITTED", "CHANGE_PENDING"),
+        ("SUBMITTED", "ESCALATED"),
+        ("CHANGE_PENDING", "READY"),
+        ("DRAFT", "BLOCKED"),
+        ("AUDITING", "BLOCKED"),
+        ("READY", "BLOCKED"),
+    }
+    erratum_added = {
+        ("REWORK", "RUNNING"),
+        ("ESCALATED", "READY"),
+        ("ESCALATED", "BLOCKED"),
+    }
+    assert gate.LEGAL_TRANSITIONS == frozenset(v2_set | erratum_added)
+
+
+def test_g36_erratum_does_not_liberalize_other_dead_ends():
+    """勘误只开口三条：``ACCEPTED`` 仍为终态，``REWORK``/``ESCALATED`` 其余出边仍非法。"""
+    assert "G36" in gate.check(_valid_task(current_state="ACCEPTED", next_state="READY"))["hits"]
+    assert "G36" in gate.check(_valid_task(current_state="REWORK", next_state="SUBMITTED"))["hits"]
+    assert "G36" in gate.check(_valid_task(current_state="REWORK", next_state="ACCEPTED"))["hits"]
+    assert "G36" in gate.check(_valid_task(current_state="ESCALATED", next_state="RUNNING"))["hits"]
+    assert "G36" in gate.check(_valid_task(current_state="ESCALATED", next_state="ACCEPTED"))["hits"]
+
+
+def test_g36_erratum_keeps_submitted_to_running_illegal():
+    """勘误不得放宽其他规则——原 ``SUBMITTED → RUNNING`` 非法判定必须保留。"""
+    result = gate.check(_valid_task(current_state="SUBMITTED", next_state="RUNNING"))
+    assert "G36" in result["hits"]
+    assert result["blocked"] is True
+
+
+def test_gate_source_cites_baseline_defect_v1_4_err_02():
+    """勘误第三节第 2 条：实现必须在注释中引用 ``V1.4-ERR-02``。"""
+    source = (Path(gate.__file__)).read_text(encoding="utf-8")
+    assert "V1.4-ERR-02" in source
+
+
 # ================================================================ objection
 
 

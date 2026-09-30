@@ -105,6 +105,18 @@ LEGAL_TRANSITIONS = frozenset(
         ("AUDITING", "BLOCKED"),
         ("READY", "BLOCKED"),
         # 注：``BLOCKED → 进入 BLOCKED 前的状态`` 依赖来源状态，见 _transition_legal()
+        # 勘误 01 追加（V1.4-ERR-02）：补齐 REWORK / ESCALATED 的死端
+        #
+        # ⚠ V1.4-ERR-02（见 ``team/architecture/BASELINE-DEFECTS.md``）：
+        # §10.1 的跃迁表只写了「主流水线 + 异常分支的进入边」，
+        # ``REWORK`` 与 ``ESCALATED`` 没有任何出边，属**死端**——
+        # 第一次返工（§9.2/§9.3）或第一次升级（§9.2 → §6 用户决策）后任务永久卡死。
+        # 以下三条依 ``TASK-001-v2-ERRATUM-01.md``（Owner 裁决 O-2：只补跃迁表）追加；
+        # ``ACCEPTED`` 仍为终态，不在本勘误范围内。
+        # 引用 §10.1 的实现必须同时引用 ERR-01 与 ERR-02，不得单独引用 §10.1。
+        ("REWORK", "RUNNING"),  # 返工完成，重新进入执行（§9.2、§9.3）
+        ("ESCALATED", "READY"),  # 用户裁决「继续」（§6.1、§9.2）
+        ("ESCALATED", "BLOCKED"),  # 用户裁决「暂停 / 需补充条件」（§6.5、§9.2）
     }
 )
 

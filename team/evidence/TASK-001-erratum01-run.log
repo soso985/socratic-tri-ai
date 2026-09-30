@@ -1,0 +1,280 @@
+###############################################################################
+# TASK-001 v2 勘误 01（TASK-001-v2-ERRATUM-01）· 全部轮次测试日志
+# 授权：Owner 裁决 O-2 · 勘误文件第三节第 4 条（保留全部轮次，含失败轮次）
+# 唯一解释器：C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+# 唯一测试命令："C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" -m pytest "E:\Socratic_M\team\tests" -v
+# 环境规避（Mentor 已批准）：PYTEST_ADDOPTS='-p no:cacheprovider'、PYTHONDONTWRITEBYTECODE=1
+# 编码设置（仅为忠实采集输出，不影响测试结果）：PYTHONIOENCODING=utf-8、[Console]::OutputEncoding=utf-8
+# 本文件按时间顺序由命令执行追加生成，未经人工编辑。
+###############################################################################
+
+===== ROUND 1 / 已加勘误测试、尚未改跃迁表（预期 RED）· 2026-09-30T12:08:21+08:00 =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" -m pytest "E:\Socratic_M\team\tests" -v
+============================= test session starts =============================
+platform win32 -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+rootdir: E:\Socratic_M
+collecting ... collected 81 items
+
+team/tests/test_control.py::test_gate_valid_task_passes_with_no_hits PASSED [  1%]
+team/tests/test_control.py::test_g31_blocks_when_contract_not_approved PASSED [  2%]
+team/tests/test_control.py::test_g32_blocks_on_version_mismatch PASSED   [  3%]
+team/tests/test_control.py::test_g32_blocks_on_write_path_outside_allowed_paths PASSED [  4%]
+team/tests/test_control.py::test_g32_blocks_on_path_traversal_escape PASSED [  6%]
+team/tests/test_control.py::test_g32_accepts_absolute_path_inside_workspace PASSED [  7%]
+team/tests/test_control.py::test_g32_blocks_when_dependencies_not_met PASSED [  8%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[changes] PASSED [  9%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[test_evidence] PASSED [ 11%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[risks] PASSED [ 12%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[deviations] PASSED [ 13%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[rollback] PASSED [ 14%]
+team/tests/test_control.py::test_g33_blocks_empty_report_item PASSED     [ 16%]
+team/tests/test_control.py::test_g33_accepts_chinese_report_keys PASSED  [ 17%]
+team/tests/test_control.py::test_g33_blocks_acceptance_without_report PASSED [ 18%]
+team/tests/test_control.py::test_g34_blocks_when_change_pending_affects_task PASSED [ 19%]
+team/tests/test_control.py::test_g34_not_hit_when_change_does_not_affect_task PASSED [ 20%]
+team/tests/test_control.py::test_g35_triggers_on_budget_exceeded PASSED  [ 22%]
+team/tests/test_control.py::test_g35_triggers_on_rework_over_limit PASSED [ 23%]
+team/tests/test_control.py::test_g35_not_hit_at_rework_equal_to_limit PASSED [ 24%]
+team/tests/test_control.py::test_g35_triggers_on_risk_over_threshold PASSED [ 25%]
+team/tests/test_control.py::test_g36_blocks_illegal_transition_submitted_to_running PASSED [ 27%]
+team/tests/test_control.py::test_g36_accepts_legal_transition_draft_to_auditing PASSED [ 28%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_ready_to_blocked PASSED [ 29%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_auditing_to_blocked PASSED [ 30%]
+team/tests/test_control.py::test_g36_accepts_blocked_returning_to_previous_state PASSED [ 32%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_it_could_not_come_from PASSED [ 33%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_conflicting_with_blocked_from PASSED [ 34%]
+team/tests/test_control.py::test_g36_transition_check_appends_audit_log PASSED [ 35%]
+team/tests/test_control.py::test_g37_blocks_when_awaiting_user_decision_and_not_paused PASSED [ 37%]
+team/tests/test_control.py::test_g37_not_hit_when_awaiting_user_decision_and_paused PASSED [ 38%]
+team/tests/test_control.py::test_g37_not_hit_when_paused_by_state_without_is_paused_flag PASSED [ 39%]
+team/tests/test_control.py::test_g37_not_hit_when_no_user_decision_pending PASSED [ 40%]
+team/tests/test_control.py::test_gate_rule_ids_cover_all_seven_gates PASSED [ 41%]
+team/tests/test_control.py::test_package_workspace_base_and_default_data_root_are_correct PASSED [ 43%]
+team/tests/test_control.py::test_gate_hits_are_ordered_and_reasons_match PASSED [ 44%]
+team/tests/test_control.py::test_gate_rejects_non_dict_task PASSED       [ 45%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_01 PASSED [ 46%]
+team/tests/test_control.py::test_g36_erratum_accepts_rework_to_running FAILED [ 48%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_ready FAILED [ 49%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_blocked FAILED [ 50%]
+team/tests/test_control.py::test_g36_erratum_transition_set_is_exactly_v2_plus_three FAILED [ 51%]
+team/tests/test_control.py::test_g36_erratum_does_not_liberalize_other_dead_ends PASSED [ 53%]
+team/tests/test_control.py::test_g36_erratum_keeps_submitted_to_running_illegal PASSED [ 54%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_02 FAILED [ 55%]
+team/tests/test_control.py::test_objection_id_is_generated_with_expected_format PASSED [ 56%]
+team/tests/test_control.py::test_objection_id_increments_per_submission PASSED [ 58%]
+team/tests/test_control.py::test_objection_id_cannot_be_supplied_externally PASSED [ 59%]
+team/tests/test_control.py::test_objection_submit_has_no_obj_id_parameter PASSED [ 60%]
+team/tests/test_control.py::test_objection_submit_sets_task_blocked PASSED [ 61%]
+team/tests/test_control.py::test_objection_submit_records_previous_status PASSED [ 62%]
+team/tests/test_control.py::test_objection_writes_record_into_proposals PASSED [ 64%]
+team/tests/test_control.py::test_objection_appends_index_entry PASSED    [ 65%]
+team/tests/test_control.py::test_objection_invalidates_unknown_sets_mentor_verdict_plan_flag PASSED [ 66%]
+team/tests/test_control.py::test_objection_invalidates_is_required PASSED [ 67%]
+team/tests/test_control.py::test_objection_kind_is_validated PASSED      [ 69%]
+team/tests/test_control.py::test_objection_rejects_empty_claim_or_evidence PASSED [ 70%]
+team/tests/test_control.py::test_objection_submit_appends_audit_log PASSED [ 71%]
+team/tests/test_control.py::test_mentor_response_is_registered PASSED    [ 72%]
+team/tests/test_control.py::test_mentor_response_registered_even_when_objection_judged_minor PASSED [ 74%]
+team/tests/test_control.py::test_register_mentor_response_requires_known_objection PASSED [ 75%]
+team/tests/test_control.py::test_register_mentor_response_rejects_empty_text PASSED [ 76%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_only_mentor_submitted PASSED [ 77%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_only_controller_submitted PASSED [ 79%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_no_verdict_submitted PASSED [ 80%]
+team/tests/test_control.py::test_compare_both_major_escalates PASSED     [ 81%]
+team/tests/test_control.py::test_compare_both_minor_does_not_escalate PASSED [ 82%]
+team/tests/test_control.py::test_compare_divergent_escalates PASSED      [ 83%]
+team/tests/test_control.py::test_verdicts_are_written_to_separate_files PASSED [ 85%]
+team/tests/test_control.py::test_comparison_is_archived_with_both_verdicts PASSED [ 86%]
+team/tests/test_control.py::test_submit_verdict_rejects_unknown_role PASSED [ 87%]
+team/tests/test_control.py::test_submit_verdict_rejects_malformed_verdict PASSED [ 88%]
+team/tests/test_control.py::test_compare_rejects_empty_obj_id PASSED     [ 90%]
+team/tests/test_control.py::test_audit_log_append_returns_hash_and_creates_file PASSED [ 91%]
+team/tests/test_control.py::test_audit_log_verify_true_for_untampered_event PASSED [ 92%]
+team/tests/test_control.py::test_audit_log_chains_prev_hash PASSED       [ 93%]
+team/tests/test_control.py::test_audit_log_verify_false_after_tamper PASSED [ 95%]
+team/tests/test_control.py::test_audit_log_verify_false_for_unknown_hash PASSED [ 96%]
+team/tests/test_control.py::test_audit_log_verify_false_when_log_missing PASSED [ 97%]
+team/tests/test_control.py::test_audit_log_append_rejects_non_dict PASSED [ 98%]
+team/tests/test_control.py::test_audit_log_append_is_append_only PASSED  [100%]
+
+================================== FAILURES ===================================
+_________________ test_g36_erratum_accepts_rework_to_running __________________
+
+    def test_g36_erratum_accepts_rework_to_running():
+        """勘误 2.2：``REWORK → RUNNING``（返工完成，§9.2/§9.3）为合法。"""
+        result = gate.check(_valid_task(current_state="REWORK", next_state="RUNNING"))
+>       assert "G36" not in result["hits"], result["reasons"]
+E       AssertionError: ['[G36] 状态跃迁非法：REWORK → RUNNING；TASK-001 v2 跃迁表未列举 REWORK → RUNNING（「其余一律非法」）（§10.2-36、V1.4-ERR-01）']
+E       assert 'G36' not in ['G36']
+
+team\tests\test_control.py:342: AssertionError
+_________________ test_g36_erratum_accepts_escalated_to_ready _________________
+
+    def test_g36_erratum_accepts_escalated_to_ready():
+        """勘误 2.2：``ESCALATED → READY``（用户裁决继续，§6.1）为合法。"""
+        result = gate.check(_valid_task(current_state="ESCALATED", next_state="READY"))
+>       assert "G36" not in result["hits"], result["reasons"]
+E       AssertionError: ['[G36] 状态跃迁非法：ESCALATED → READY；TASK-001 v2 跃迁表未列举 ESCALATED → READY（「其余一律非法」）（§10.2-36、V1.4-ERR-01）']
+E       assert 'G36' not in ['G36']
+
+team\tests\test_control.py:348: AssertionError
+________________ test_g36_erratum_accepts_escalated_to_blocked ________________
+
+    def test_g36_erratum_accepts_escalated_to_blocked():
+        """勘误 2.2：``ESCALATED → BLOCKED``（用户裁决暂停/需补条件，§6.5）为合法。"""
+        result = gate.check(_valid_task(current_state="ESCALATED", next_state="BLOCKED"))
+>       assert "G36" not in result["hits"], result["reasons"]
+E       AssertionError: ['[G36] 状态跃迁非法：ESCALATED → BLOCKED；TASK-001 v2 跃迁表未列举 ESCALATED → BLOCKED（「其余一律非法」）（§10.2-36、V1.4-ERR-01）']
+E       assert 'G36' not in ['G36']
+
+team\tests\test_control.py:354: AssertionError
+__________ test_g36_erratum_transition_set_is_exactly_v2_plus_three ___________
+
+    def test_g36_erratum_transition_set_is_exactly_v2_plus_three():
+        """范围证据：跃迁集合必须**恰好**等于 v2 原集合 + 勘误三条，一条不多、一条不少。"""
+        v2_set = {
+            ("DRAFT", "AUDITING"),
+            ("AUDITING", "READY"),
+            ("READY", "RUNNING"),
+            ("RUNNING", "SUBMITTED"),
+            ("SUBMITTED", "ACCEPTED"),
+            ("RUNNING", "REWORK"),
+            ("RUNNING", "BLOCKED"),
+            ("RUNNING", "CHANGE_PENDING"),
+            ("RUNNING", "ESCALATED"),
+            ("SUBMITTED", "REWORK"),
+            ("SUBMITTED", "BLOCKED"),
+            ("SUBMITTED", "CHANGE_PENDING"),
+            ("SUBMITTED", "ESCALATED"),
+            ("CHANGE_PENDING", "READY"),
+            ("DRAFT", "BLOCKED"),
+            ("AUDITING", "BLOCKED"),
+            ("READY", "BLOCKED"),
+        }
+        erratum_added = {
+            ("REWORK", "RUNNING"),
+            ("ESCALATED", "READY"),
+            ("ESCALATED", "BLOCKED"),
+        }
+>       assert gate.LEGAL_TRANSITIONS == frozenset(v2_set | erratum_added)
+E       AssertionError: assert frozenset({('...OCKED'), ...}) == frozenset({('...OCKED'), ...})
+E         
+E         Extra items in the right set:
+E         ('ESCALATED', 'BLOCKED')
+E         ('REWORK', 'RUNNING')
+E         ('ESCALATED', 'READY')
+E         
+E         Full diff:...
+E         
+E         ...Full output truncated (82 lines hidden), use '-vv' to show
+
+team\tests\test_control.py:383: AssertionError
+_____________ test_gate_source_cites_baseline_defect_v1_4_err_02 ______________
+
+    def test_gate_source_cites_baseline_defect_v1_4_err_02():
+        """勘误第三节第 2 条：实现必须在注释中引用 ``V1.4-ERR-02``。"""
+        source = (Path(gate.__file__)).read_text(encoding="utf-8")
+>       assert "V1.4-ERR-02" in source
+E       assert 'V1.4-ERR-02' in '"""§10.2 七条门禁（G31–G37）的静态字典校验 —— TASK-001 v2 · must_do #1。\n\n契约：``team/milestones/M1/TASK-001-v2.md``（唯一有效版本）\n需求：``REQ-T1``／上游 ``L0-06``（程序化权限隔离，而非仅依赖提示词）\n\n职责边界（``bounded_scope`` / ARC-001 D4）\n------------------------------------------\n本模块只做**静态字典校验**：接收一个 ``task`` 字典，返回命中规则与是否阻断。\n它**不真正拦截工具调用**。真正的拦截需要 hook 到工具执行层，属 P1 之后。\n⚠ 该简化必须在验收时显式声明，不得让本版看起来像「门禁已经能拦住越权」。\n\n输入字段\n--------\n【契约明文定义】``contract_status`` · ``contract_version`` · ``task_version`` ·\n``allowed_paths`` · ``dependencies_met`` · ``change_pending`` · ``affected_by_change`` ·\n``budget_exceeded`` · ``rework_count`` · ``rework_limit`` · ``risk_over_threshold`` ·\n``awaiting_user_decision`` · ``current_state`` · ``is_paused``\n\n【本实现补充（契约未规定字段名，已在工作报告中登记为设计决策）】\n``next_state`` / ``to_state``（跃迁目标状态，二者取其一）· ``write_paths``（本次拟写入路径）·\n``report``（§8.1-30 执行报告）· ``blocked_from``（``BLOCKED → 原状态`` 时的来源状态，可选）\n\n返回\n----\n``{"hits": [规则号...], "blocked": bool, "reasons": [...]}``\n``hits`` 与 ``reasons`` 按 G31→G37 顺序一一对应；命中任一规则即 ``blocked=True``\n（G33 的语义是「不得进入 PASS」、G35 的语义是「触发暂停/升级」，其具体语义写在 ``reasons`` 中）。\n"""\n\nfrom __future__ import annotations\n\nimport posixpath\nimport re\n\nfrom . import audit_log, WORKSPACE...transition_legal(source, target, task.get("blocked_from"))\n        if not legal:\n            hit("G36", f"状态跃迁非法：{source} → {target}；{why}（§10.2-36、V1.4-ERR-01）")\n        # §10.2-36 后半句：所有状态跃迁由确定性程序校验「并写入不可随意覆盖的审计日志」\n        audit_log.append(\n            {\n                "kind": "gate.transition_check",\n                "task_id": task.get("task_id"),\n                "contract_version": contract_version,\n                "source": source,\n                "target": target,\n                "blocked_from": task.get("blocked_from"),\n                "legal": legal,\n                "detail": why,\n                "basis": "§10.2-36 + V1.4-ERR-01 + TASK-001 v2 跃迁表",\n            }\n        )\n\n    # ---- G37 等待用户决策期间未保持暂停（§6.5 / §10.2-37）\n    if task.get("awaiting_user_decision") is True and not _is_paused(task):\n        hit(\n            "G37",\n            "处于「等待用户决策」状态却未保持暂停："\n            f"awaiting_user_decision=True, is_paused={task.get(\'is_paused\')!r}, "\n            f"current_state={source!r} → 阻断，不得自动放行、不得降级为单方决策（§6.5、§10.2-37）",\n        )\n\n    # hits / reasons 由 G31→G37 顺序构造，天然一一对应且顺序稳定\n    return {"hits": hits, "blocked": bool(hits), "reasons": reasons}\n'
+
+team\tests\test_control.py:405: AssertionError
+=========================== short test summary info ===========================
+FAILED team/tests/test_control.py::test_g36_erratum_accepts_rework_to_running
+FAILED team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_ready
+FAILED team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_blocked
+FAILED team/tests/test_control.py::test_g36_erratum_transition_set_is_exactly_v2_plus_three
+FAILED team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_02
+======================== 5 failed, 76 passed in 0.49s =========================
+[exit code: 1]
+
+===== ROUND 2 / 已按勘误 2.2 追加三条跃迁（预期 GREEN）· 2026-09-30T12:08:32+08:00 =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" -m pytest "E:\Socratic_M\team\tests" -v
+============================= test session starts =============================
+platform win32 -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+rootdir: E:\Socratic_M
+collecting ... collected 81 items
+
+team/tests/test_control.py::test_gate_valid_task_passes_with_no_hits PASSED [  1%]
+team/tests/test_control.py::test_g31_blocks_when_contract_not_approved PASSED [  2%]
+team/tests/test_control.py::test_g32_blocks_on_version_mismatch PASSED   [  3%]
+team/tests/test_control.py::test_g32_blocks_on_write_path_outside_allowed_paths PASSED [  4%]
+team/tests/test_control.py::test_g32_blocks_on_path_traversal_escape PASSED [  6%]
+team/tests/test_control.py::test_g32_accepts_absolute_path_inside_workspace PASSED [  7%]
+team/tests/test_control.py::test_g32_blocks_when_dependencies_not_met PASSED [  8%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[changes] PASSED [  9%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[test_evidence] PASSED [ 11%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[risks] PASSED [ 12%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[deviations] PASSED [ 13%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[rollback] PASSED [ 14%]
+team/tests/test_control.py::test_g33_blocks_empty_report_item PASSED     [ 16%]
+team/tests/test_control.py::test_g33_accepts_chinese_report_keys PASSED  [ 17%]
+team/tests/test_control.py::test_g33_blocks_acceptance_without_report PASSED [ 18%]
+team/tests/test_control.py::test_g34_blocks_when_change_pending_affects_task PASSED [ 19%]
+team/tests/test_control.py::test_g34_not_hit_when_change_does_not_affect_task PASSED [ 20%]
+team/tests/test_control.py::test_g35_triggers_on_budget_exceeded PASSED  [ 22%]
+team/tests/test_control.py::test_g35_triggers_on_rework_over_limit PASSED [ 23%]
+team/tests/test_control.py::test_g35_not_hit_at_rework_equal_to_limit PASSED [ 24%]
+team/tests/test_control.py::test_g35_triggers_on_risk_over_threshold PASSED [ 25%]
+team/tests/test_control.py::test_g36_blocks_illegal_transition_submitted_to_running PASSED [ 27%]
+team/tests/test_control.py::test_g36_accepts_legal_transition_draft_to_auditing PASSED [ 28%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_ready_to_blocked PASSED [ 29%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_auditing_to_blocked PASSED [ 30%]
+team/tests/test_control.py::test_g36_accepts_blocked_returning_to_previous_state PASSED [ 32%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_it_could_not_come_from PASSED [ 33%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_conflicting_with_blocked_from PASSED [ 34%]
+team/tests/test_control.py::test_g36_transition_check_appends_audit_log PASSED [ 35%]
+team/tests/test_control.py::test_g37_blocks_when_awaiting_user_decision_and_not_paused PASSED [ 37%]
+team/tests/test_control.py::test_g37_not_hit_when_awaiting_user_decision_and_paused PASSED [ 38%]
+team/tests/test_control.py::test_g37_not_hit_when_paused_by_state_without_is_paused_flag PASSED [ 39%]
+team/tests/test_control.py::test_g37_not_hit_when_no_user_decision_pending PASSED [ 40%]
+team/tests/test_control.py::test_gate_rule_ids_cover_all_seven_gates PASSED [ 41%]
+team/tests/test_control.py::test_package_workspace_base_and_default_data_root_are_correct PASSED [ 43%]
+team/tests/test_control.py::test_gate_hits_are_ordered_and_reasons_match PASSED [ 44%]
+team/tests/test_control.py::test_gate_rejects_non_dict_task PASSED       [ 45%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_01 PASSED [ 46%]
+team/tests/test_control.py::test_g36_erratum_accepts_rework_to_running PASSED [ 48%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_ready PASSED [ 49%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_blocked PASSED [ 50%]
+team/tests/test_control.py::test_g36_erratum_transition_set_is_exactly_v2_plus_three PASSED [ 51%]
+team/tests/test_control.py::test_g36_erratum_does_not_liberalize_other_dead_ends PASSED [ 53%]
+team/tests/test_control.py::test_g36_erratum_keeps_submitted_to_running_illegal PASSED [ 54%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_02 PASSED [ 55%]
+team/tests/test_control.py::test_objection_id_is_generated_with_expected_format PASSED [ 56%]
+team/tests/test_control.py::test_objection_id_increments_per_submission PASSED [ 58%]
+team/tests/test_control.py::test_objection_id_cannot_be_supplied_externally PASSED [ 59%]
+team/tests/test_control.py::test_objection_submit_has_no_obj_id_parameter PASSED [ 60%]
+team/tests/test_control.py::test_objection_submit_sets_task_blocked PASSED [ 61%]
+team/tests/test_control.py::test_objection_submit_records_previous_status PASSED [ 62%]
+team/tests/test_control.py::test_objection_writes_record_into_proposals PASSED [ 64%]
+team/tests/test_control.py::test_objection_appends_index_entry PASSED    [ 65%]
+team/tests/test_control.py::test_objection_invalidates_unknown_sets_mentor_verdict_plan_flag PASSED [ 66%]
+team/tests/test_control.py::test_objection_invalidates_is_required PASSED [ 67%]
+team/tests/test_control.py::test_objection_kind_is_validated PASSED      [ 69%]
+team/tests/test_control.py::test_objection_rejects_empty_claim_or_evidence PASSED [ 70%]
+team/tests/test_control.py::test_objection_submit_appends_audit_log PASSED [ 71%]
+team/tests/test_control.py::test_mentor_response_is_registered PASSED    [ 72%]
+team/tests/test_control.py::test_mentor_response_registered_even_when_objection_judged_minor PASSED [ 74%]
+team/tests/test_control.py::test_register_mentor_response_requires_known_objection PASSED [ 75%]
+team/tests/test_control.py::test_register_mentor_response_rejects_empty_text PASSED [ 76%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_only_mentor_submitted PASSED [ 77%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_only_controller_submitted PASSED [ 79%]
+team/tests/test_control.py::test_compare_raises_incomplete_when_no_verdict_submitted PASSED [ 80%]
+team/tests/test_control.py::test_compare_both_major_escalates PASSED     [ 81%]
+team/tests/test_control.py::test_compare_both_minor_does_not_escalate PASSED [ 82%]
+team/tests/test_control.py::test_compare_divergent_escalates PASSED      [ 83%]
+team/tests/test_control.py::test_verdicts_are_written_to_separate_files PASSED [ 85%]
+team/tests/test_control.py::test_comparison_is_archived_with_both_verdicts PASSED [ 86%]
+team/tests/test_control.py::test_submit_verdict_rejects_unknown_role PASSED [ 87%]
+team/tests/test_control.py::test_submit_verdict_rejects_malformed_verdict PASSED [ 88%]
+team/tests/test_control.py::test_compare_rejects_empty_obj_id PASSED     [ 90%]
+team/tests/test_control.py::test_audit_log_append_returns_hash_and_creates_file PASSED [ 91%]
+team/tests/test_control.py::test_audit_log_verify_true_for_untampered_event PASSED [ 92%]
+team/tests/test_control.py::test_audit_log_chains_prev_hash PASSED       [ 93%]
+team/tests/test_control.py::test_audit_log_verify_false_after_tamper PASSED [ 95%]
+team/tests/test_control.py::test_audit_log_verify_false_for_unknown_hash PASSED [ 96%]
+team/tests/test_control.py::test_audit_log_verify_false_when_log_missing PASSED [ 97%]
+team/tests/test_control.py::test_audit_log_append_rejects_non_dict PASSED [ 98%]
+team/tests/test_control.py::test_audit_log_append_is_append_only PASSED  [100%]
+
+============================= 81 passed in 0.41s ==============================
+[exit code: 0]
