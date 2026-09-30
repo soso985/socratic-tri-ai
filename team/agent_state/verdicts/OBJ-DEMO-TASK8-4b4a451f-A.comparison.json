@@ -1,0 +1,24 @@
+{
+  "schema": "task-internal/v1",
+  "obj_id": "OBJ-DEMO-TASK8-4b4a451f-A",
+  "outcome": "both_major",
+  "escalate": true,
+  "compared_at": "2026-09-30T12:36:38+08:00",
+  "mentor_verdict": {
+    "major": true,
+    "hit_rules": [
+      1
+    ],
+    "scope": "L0 需求相关 · MENTOR-SEALED-MARKER-77f944ccc1eb4f5b84b245a4db7a0ecd"
+  },
+  "controller_verdict": {
+    "major": true,
+    "hit_rules": [
+      1
+    ],
+    "scope": "L0 需求相关"
+  },
+  "mentor_opened_at": "2026-09-30T12:36:38+08:00",
+  "controller_opened_at": "2026-09-30T12:36:38+08:00",
+  "basis": "§8.5 共用清单（命中任一即为重大）；双方封存并揭示齐备后由确定性程序比对"
+}

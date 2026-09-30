@@ -1,0 +1,8 @@
+{
+  "obj_id": "OBJ-DEMO-TASK8-4b4a451f-C",
+  "role": "controller",
+  "commitment": "b0d820738a3b7793df64b1ca0c02799ffdcb4ae7e780703a66c6b712dfd9fe6a",
+  "salt": "a3d88fc64743ee510496072a8146ff62",
+  "sealed_at": "2026-09-30T12:36:38+08:00",
+  "state": "SEALED"
+}

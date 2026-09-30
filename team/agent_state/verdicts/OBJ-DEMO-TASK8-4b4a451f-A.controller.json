@@ -1,0 +1,14 @@
+{
+  "schema": "task-internal/v1",
+  "obj_id": "OBJ-DEMO-TASK8-4b4a451f-A",
+  "role": "controller",
+  "verdict": {
+    "major": true,
+    "hit_rules": [
+      1
+    ],
+    "scope": "L0 需求相关"
+  },
+  "state": "OPENED",
+  "opened_at": "2026-09-30T12:36:38+08:00"
+}

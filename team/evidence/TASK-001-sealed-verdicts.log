@@ -1,0 +1,270 @@
+###############################################################################
+# task-8 双判定封存演示日志（commit → reveal，封 G-9）· Owner 直接指令
+# 语义：封存期内磁盘上只有承诺（哈希），没有明文；双份揭示齐备后才开封、才可比对
+# 唯一解释器：C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+# 本文件按时间顺序由命令执行追加生成，未经人工编辑。
+###############################################################################
+
+===== SECTION 1 / S1–S5 封存协议演示 · 2026-09-30T12:36:37+08:00 =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" "E:\Socratic_M\team\tests\demo_sealed_verdicts.py"
+=== task-8 · 双判定封存演示（commit → reveal）===
+解释器版本: 3.12.14
+运行标识    : 4b4a451f
+
+==============================================================================
+S1 · 只封存 Mentor → 读取必须被拒 + 全目录检索明文特征串 → 0 命中
+==============================================================================
+数据根        : E:\Socratic_M\team
+verdicts 目录 : E:\Socratic_M\team\agent_state\verdicts
+对象 ID       : OBJ-DEMO-TASK8-4b4a451f-A
+
+--- 封存动作 ---
+commitment    : 3f3a34127d48779cdf1970b9be1b89505a05844a980c18b64f7a12a4d6394259
+salt          : 5983285d9c150c46d83ddab3891790dd
+封存文件路径  : E:\Socratic_M\team\agent_state\verdicts\OBJ-DEMO-TASK8-4b4a451f-A.mentor.sealed.json
+封存文件内容  : { "obj_id": "OBJ-DEMO-TASK8-4b4a451f-A", "role": "mentor", "commitment": "3f3a34127d48779cdf1970b9be1b89505a05844a980c18b64f7a12a4d6394259", "salt": "5983285d9c150c46d83ddab3891790dd", "sealed_at": "2026-09-30T12:36:38+08:00", "state": "SEALED" }
+封存文件字段  : ['commitment', 'obj_id', 'role', 'salt', 'sealed_at', 'state']
+
+--- 第 1 步：此时尝试读取 ---
+  read_verdict("mentor", ...): 抛出 SealedVerdict（拒绝读取）
+      OBJ-DEMO-TASK8-4b4a451f-A 尚未完成双份封存（缺少：controller）→ 拒绝读取明文。
+  read_verdict("controller", ...): 抛出 SealedVerdict（拒绝读取）
+      OBJ-DEMO-TASK8-4b4a451f-A 尚未完成双份封存（缺少：controller）→ 拒绝读取明文。
+
+--- 第 2 步：磁盘上到底有没有明文？（本任务最有价值的证据）---
+verdicts 目录清单:
+    OBJ-20260930-001.comparison.json
+    OBJ-20260930-001.controller.json
+    OBJ-20260930-001.mentor.json
+    OBJ-DEMO-TASK8-4b4a451f-A.mentor.sealed.json
+属于本次对象 ID 的明文文件: （无）
+特征串           : MENTOR-SEALED-MARKER-77f944ccc1eb4f5b84b245a4db7a0ecd
+检索范围         : E:\Socratic_M（跳过 .git）
+已扫描文件数     : 138
+命中数           : 0
+判定             : PASS —— 封存期内磁盘上不存在明文（物理事实）
+（说明：上面这行特征串是在检索**之后**才打印的；检索时刻它只存在于本进程内存中。）
+
+==============================================================================
+S2 · 再封存 Controller（仍未 reveal）→ 读取仍被拒
+==============================================================================
+Controller commitment: 8df14c47fb4a5fbbac9c8ad8995206a164528e0ce9a79135256ce2251ec3d4fc
+封存文件字段        : ['commitment', 'obj_id', 'role', 'salt', 'sealed_at', 'state']
+--- 双份封存齐备、但双方都未揭示 ---
+  read_verdict("mentor", ...): 抛出 SealedVerdict（拒绝读取）
+      OBJ-DEMO-TASK8-4b4a451f-A 的双份揭示尚未全部完成 → 拒绝读取明文（封存期内磁盘上没有明文）。
+  read_verdict("controller", ...): 抛出 SealedVerdict（拒绝读取）
+      OBJ-DEMO-TASK8-4b4a451f-A 的双份揭示尚未全部完成 → 拒绝读取明文（封存期内磁盘上没有明文）。
+  compare(...): 抛出 SealedVerdict（拒绝比对）
+      OBJ-DEMO-TASK8-4b4a451f-A 未完成「双份封存 + 双份揭示」→ 拒绝比对。§8.5 要求双方独立判定、互不可见；封存未开封时任何比对都会泄露一方结论。
+判定             : PASS —— 未揭示前依然读不到
+
+==============================================================================
+S3 · 双份 reveal → 首次可读 → compare 成功
+==============================================================================
+揭示 mentor      : {"obj_id": "OBJ-DEMO-TASK8-4b4a451f-A", "role": "mentor", "commitment": "3f3a34127d48779cdf1970b9be1b89505a05844a980c18b64f7a12a4d6394259", "state": "REVEALED", "opened": false, "opened_path": null}
+（此时仅一方揭示 → 仍不应有明文）
+明文文件          : （无）
+揭示 controller  : {"obj_id": "OBJ-DEMO-TASK8-4b4a451f-A", "role": "controller", "commitment": "8df14c47fb4a5fbbac9c8ad8995206a164528e0ce9a79135256ce2251ec3d4fc", "state": "OPENED", "opened": true, "opened_path": "E:\\Socratic_M\\team\\agent_state\\verdicts\\OBJ-DEMO-TASK8-4b4a451f-A.controller.json"}
+
+--- 开封后读取 ---
+mentor 明文      : {"major": true, "hit_rules": [1], "scope": "L0 需求相关 · MENTOR-SEALED-MARKER-77f944ccc1eb4f5b84b245a4db7a0ecd"}
+controller 明文  : {"major": true, "hit_rules": [1], "scope": "L0 需求相关"}
+开封文件路径     : E:\Socratic_M\team\agent_state\verdicts\OBJ-DEMO-TASK8-4b4a451f-A.mentor.json
+
+compare 结果     : {"outcome": "both_major", "escalate": true}
+与预期一致       : True （预期 {'outcome': 'both_major', 'escalate': True}）
+比对留档         : E:\Socratic_M\team\agent_state\verdicts\OBJ-DEMO-TASK8-4b4a451f-A.comparison.json 存在 = True
+判定             : PASS —— 双份揭示后才首次可读并可比对
+
+==============================================================================
+S4 · 只封存一方就 compare → 必须抛 SealedVerdict
+==============================================================================
+对象 ID          : OBJ-DEMO-TASK8-4b4a451f-B （只封存了 mentor）
+  compare(...): 抛出 SealedVerdict（拒绝比对）
+      OBJ-DEMO-TASK8-4b4a451f-B 未完成「双份封存 + 双份揭示」→ 拒绝比对。§8.5 要求双方独立判定、互不可见；封存未开封时任何比对都会泄露一方结论。
+判定             : PASS —— 单方封存时比对被拒
+
+==============================================================================
+S5 · reveal 时故意给错 verdict → CommitmentMismatch 且不落明文
+==============================================================================
+对象 ID          : OBJ-DEMO-TASK8-4b4a451f-C （双份已封存）
+揭示时故意给错   : {"major": false, "hit_rules": [7], "scope": "被篡改的判定"}
+  抛出 CommitmentMismatch：
+      OBJ-DEMO-TASK8-4b4a451f-C / mentor 揭示的判决与封存承诺不符：sha256(salt + canonical(verdict)) != commitment（eb1b703ec043a3efeb8c145ecb008cb94a5e6ab75e2153e65127233df013f17a）。已拒绝揭示，磁盘上未写入任何明文。
+该对象的明文文件 : （无）
+mentor 封存状态  : SEALED
+判定             : PASS —— 承诺不符被拒且未落明文
+
+==============================================================================
+既有历史判定文件检查（OBJ-20260930-001.*，只读）
+==============================================================================
+存在  OBJ-20260930-001.mentor.json
+        SHA256: bd1eb810426c714fe02d9ff2ccdb93d491e57a7bd76a1d5e4d0352cb297910aa
+存在  OBJ-20260930-001.controller.json
+        SHA256: b5ac0afc87928c90898b2f09bd5ebbf96ac5f49ba3c180eff94cf91082078231
+存在  OBJ-20260930-001.comparison.json
+        SHA256: 60dbd62191b5d8f61924f9b570e32aa886bfb64f15791981053dd1fd378cd03b
+compare('OBJ-20260930-001') : 抛出 SealedVerdict（预期：旧记录无封存，无法再比对）
+判定             : PASS —— 历史文件原样保留，未被迁移/删除/改写
+
+==============================================================================
+总判定
+==============================================================================
+PASS  S1 单方封存：读取被拒 + 全目录 0 命中
+PASS  S2 双份封存未揭示：读取仍被拒
+PASS  S3 双份揭示：首次可读 + compare 成功
+PASS  S4 单方封存：compare 被拒
+PASS  S5 错误揭示：CommitmentMismatch 且无明文
+PASS  历史判定文件原样保留
+总判定: PASS
+==============================================================================
+[exit code: 0]
+
+===== SECTION 2 / 全量测试套件（含改写后的 dual_judge 测试） =====
+PS> "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" -m pytest "E:\Socratic_M\team\tests" -v
+============================= test session starts =============================
+platform win32 -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe
+rootdir: E:\Socratic_M
+collecting ... collected 137 items
+
+team/tests/test_control.py::test_gate_valid_task_passes_with_no_hits PASSED [  0%]
+team/tests/test_control.py::test_g31_blocks_when_contract_not_approved PASSED [  1%]
+team/tests/test_control.py::test_g32_blocks_on_version_mismatch PASSED   [  2%]
+team/tests/test_control.py::test_g32_blocks_on_write_path_outside_allowed_paths PASSED [  2%]
+team/tests/test_control.py::test_g32_blocks_on_path_traversal_escape PASSED [  3%]
+team/tests/test_control.py::test_g32_accepts_absolute_path_inside_workspace PASSED [  4%]
+team/tests/test_control.py::test_g32_blocks_when_dependencies_not_met PASSED [  5%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[changes] PASSED [  5%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[test_evidence] PASSED [  6%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[risks] PASSED [  7%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[deviations] PASSED [  8%]
+team/tests/test_control.py::test_g33_blocks_when_report_item_missing[rollback] PASSED [  8%]
+team/tests/test_control.py::test_g33_blocks_empty_report_item PASSED     [  9%]
+team/tests/test_control.py::test_g33_accepts_chinese_report_keys PASSED  [ 10%]
+team/tests/test_control.py::test_g33_blocks_acceptance_without_report PASSED [ 10%]
+team/tests/test_control.py::test_g34_blocks_when_change_pending_affects_task PASSED [ 11%]
+team/tests/test_control.py::test_g34_not_hit_when_change_does_not_affect_task PASSED [ 12%]
+team/tests/test_control.py::test_g35_triggers_on_budget_exceeded PASSED  [ 13%]
+team/tests/test_control.py::test_g35_triggers_on_rework_over_limit PASSED [ 13%]
+team/tests/test_control.py::test_g35_not_hit_at_rework_equal_to_limit PASSED [ 14%]
+team/tests/test_control.py::test_g35_triggers_on_risk_over_threshold PASSED [ 15%]
+team/tests/test_control.py::test_g36_blocks_illegal_transition_submitted_to_running PASSED [ 16%]
+team/tests/test_control.py::test_g36_accepts_legal_transition_draft_to_auditing PASSED [ 16%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_ready_to_blocked PASSED [ 17%]
+team/tests/test_control.py::test_g36_accepts_v2_added_transition_auditing_to_blocked PASSED [ 18%]
+team/tests/test_control.py::test_g36_accepts_blocked_returning_to_previous_state PASSED [ 18%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_it_could_not_come_from PASSED [ 19%]
+team/tests/test_control.py::test_g36_rejects_blocked_to_state_conflicting_with_blocked_from PASSED [ 20%]
+team/tests/test_control.py::test_g36_transition_check_appends_audit_log PASSED [ 21%]
+team/tests/test_control.py::test_g37_blocks_when_awaiting_user_decision_and_not_paused PASSED [ 21%]
+team/tests/test_control.py::test_g37_not_hit_when_awaiting_user_decision_and_paused PASSED [ 22%]
+team/tests/test_control.py::test_g37_not_hit_when_paused_by_state_without_is_paused_flag PASSED [ 23%]
+team/tests/test_control.py::test_g37_not_hit_when_no_user_decision_pending PASSED [ 24%]
+team/tests/test_control.py::test_gate_rule_ids_cover_all_seven_gates PASSED [ 24%]
+team/tests/test_control.py::test_package_workspace_base_and_default_data_root_are_correct PASSED [ 25%]
+team/tests/test_control.py::test_gate_hits_are_ordered_and_reasons_match PASSED [ 26%]
+team/tests/test_control.py::test_gate_rejects_non_dict_task PASSED       [ 27%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_01 PASSED [ 27%]
+team/tests/test_control.py::test_g36_erratum_accepts_rework_to_running PASSED [ 28%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_ready PASSED [ 29%]
+team/tests/test_control.py::test_g36_erratum_accepts_escalated_to_blocked PASSED [ 29%]
+team/tests/test_control.py::test_g36_erratum_transition_set_is_exactly_v2_plus_three PASSED [ 30%]
+team/tests/test_control.py::test_g36_erratum_does_not_liberalize_other_dead_ends PASSED [ 31%]
+team/tests/test_control.py::test_g36_erratum_keeps_submitted_to_running_illegal PASSED [ 32%]
+team/tests/test_control.py::test_gate_source_cites_baseline_defect_v1_4_err_02 PASSED [ 32%]
+team/tests/test_control.py::test_objection_id_is_generated_with_expected_format PASSED [ 33%]
+team/tests/test_control.py::test_objection_id_increments_per_submission PASSED [ 34%]
+team/tests/test_control.py::test_objection_id_cannot_be_supplied_externally PASSED [ 35%]
+team/tests/test_control.py::test_objection_submit_has_no_obj_id_parameter PASSED [ 35%]
+team/tests/test_control.py::test_objection_submit_sets_task_blocked PASSED [ 36%]
+team/tests/test_control.py::test_objection_submit_records_previous_status PASSED [ 37%]
+team/tests/test_control.py::test_objection_writes_record_into_proposals PASSED [ 37%]
+team/tests/test_control.py::test_objection_appends_index_entry PASSED    [ 38%]
+team/tests/test_control.py::test_objection_invalidates_unknown_sets_mentor_verdict_plan_flag PASSED [ 39%]
+team/tests/test_control.py::test_objection_invalidates_is_required PASSED [ 40%]
+team/tests/test_control.py::test_objection_kind_is_validated PASSED      [ 40%]
+team/tests/test_control.py::test_objection_rejects_empty_claim_or_evidence PASSED [ 41%]
+team/tests/test_control.py::test_objection_submit_appends_audit_log PASSED [ 42%]
+team/tests/test_control.py::test_mentor_response_is_registered PASSED    [ 43%]
+team/tests/test_control.py::test_mentor_response_registered_even_when_objection_judged_minor PASSED [ 43%]
+team/tests/test_control.py::test_register_mentor_response_requires_known_objection PASSED [ 44%]
+team/tests/test_control.py::test_register_mentor_response_rejects_empty_text PASSED [ 45%]
+team/tests/test_control.py::test_seal_writes_only_commitment_and_no_plaintext PASSED [ 45%]
+team/tests/test_control.py::test_read_verdict_denied_after_single_seal PASSED [ 46%]
+team/tests/test_control.py::test_read_verdict_denied_after_both_seals_without_reveal PASSED [ 47%]
+team/tests/test_control.py::test_compare_denied_after_single_seal PASSED [ 48%]
+team/tests/test_control.py::test_compare_denied_after_both_seals_without_reveal PASSED [ 48%]
+team/tests/test_control.py::test_reveal_denied_without_seal PASSED       [ 49%]
+team/tests/test_control.py::test_reveal_with_wrong_verdict_raises_mismatch_and_writes_no_plaintext PASSED [ 50%]
+team/tests/test_control.py::test_single_reveal_writes_no_plaintext PASSED [ 51%]
+team/tests/test_control.py::test_read_verdict_available_only_after_both_reveals PASSED [ 51%]
+team/tests/test_control.py::test_reveal_is_idempotent PASSED             [ 52%]
+team/tests/test_control.py::test_reseal_is_rejected PASSED               [ 53%]
+team/tests/test_control.py::test_sealed_verdict_is_also_incomplete_judgment PASSED [ 54%]
+team/tests/test_control.py::test_compare_both_major_escalates PASSED     [ 54%]
+team/tests/test_control.py::test_compare_both_minor_does_not_escalate PASSED [ 55%]
+team/tests/test_control.py::test_compare_divergent_escalates PASSED      [ 56%]
+team/tests/test_control.py::test_opened_verdicts_are_written_to_separate_files PASSED [ 56%]
+team/tests/test_control.py::test_comparison_is_archived_with_both_verdicts PASSED [ 57%]
+team/tests/test_control.py::test_submit_verdict_alias_now_seals_without_plaintext PASSED [ 58%]
+team/tests/test_control.py::test_seal_rejects_unknown_role PASSED        [ 59%]
+team/tests/test_control.py::test_seal_rejects_malformed_verdict PASSED   [ 59%]
+team/tests/test_control.py::test_compare_rejects_empty_obj_id PASSED     [ 60%]
+team/tests/test_control.py::test_audit_log_append_returns_hash_and_creates_file PASSED [ 61%]
+team/tests/test_control.py::test_audit_log_verify_true_for_untampered_event PASSED [ 62%]
+team/tests/test_control.py::test_audit_log_chains_prev_hash PASSED       [ 62%]
+team/tests/test_control.py::test_audit_log_verify_false_after_tamper PASSED [ 63%]
+team/tests/test_control.py::test_audit_log_verify_false_for_unknown_hash PASSED [ 64%]
+team/tests/test_control.py::test_audit_log_verify_false_when_log_missing PASSED [ 64%]
+team/tests/test_control.py::test_audit_log_append_rejects_non_dict PASSED [ 65%]
+team/tests/test_control.py::test_audit_log_append_is_append_only PASSED  [ 66%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_status_is_blocked PASSED [ 67%]
+team/tests/test_write_lock.py::test_lying_caller_is_denied PASSED        [ 67%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state0] PASSED [ 68%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state1] PASSED [ 69%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state2] PASSED [ 70%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[RUNNING] PASSED [ 70%]
+team/tests/test_write_lock.py::test_all_caller_supplied_state_spellings_are_ignored[caller_state4] PASSED [ 71%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_missing PASSED [ 72%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[{ this is not json] PASSED [ 72%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[] PASSED [ 73%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed[[]] PASSED [ 74%]
+team/tests/test_write_lock.py::test_denies_when_authoritative_file_unreadable_or_malformed["just a string"] PASSED [ 75%]
+team/tests/test_write_lock.py::test_denies_when_tasks_object_missing PASSED [ 75%]
+team/tests/test_write_lock.py::test_denies_when_task_id_not_in_authoritative_file PASSED [ 76%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record0] PASSED [ 77%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record1] PASSED [ 78%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record2] PASSED [ 78%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record3] PASSED [ 79%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record4] PASSED [ 80%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[record5] PASSED [ 81%]
+team/tests/test_write_lock.py::test_denies_when_status_missing_or_invalid[not-a-dict] PASSED [ 81%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[] PASSED [ 82%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[   ] PASSED [ 83%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[None] PASSED [ 83%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[123] PASSED [ 84%]
+team/tests/test_write_lock.py::test_denies_when_task_id_is_not_a_valid_selector[bad_task_id4] PASSED [ 85%]
+team/tests/test_write_lock.py::test_denial_never_opens_target PASSED     [ 86%]
+team/tests/test_write_lock.py::test_denial_creates_no_temp_file PASSED   [ 86%]
+team/tests/test_write_lock.py::test_denial_record_names_state_source_and_ignored_caller_value PASSED [ 87%]
+team/tests/test_write_lock.py::test_denial_message_states_caller_value_is_ignored PASSED [ 88%]
+team/tests/test_write_lock.py::test_denial_message_notes_when_no_caller_state_passed PASSED [ 89%]
+team/tests/test_write_lock.py::test_denial_records_accumulate_in_chain PASSED [ 89%]
+team/tests/test_write_lock.py::test_allows_when_authoritative_status_is_running PASSED [ 90%]
+team/tests/test_write_lock.py::test_caller_claiming_blocked_does_not_prevent_allowed_write PASSED [ 91%]
+team/tests/test_write_lock.py::test_task_id_selects_the_right_record PASSED [ 91%]
+team/tests/test_write_lock.py::test_allowed_write_uses_atomic_replace PASSED [ 92%]
+team/tests/test_write_lock.py::test_allowed_write_creates_missing_parent_directories PASSED [ 93%]
+team/tests/test_write_lock.py::test_allowed_write_accepts_bytes_content PASSED [ 94%]
+team/tests/test_write_lock.py::test_task_id_is_a_required_keyword PASSED [ 94%]
+team/tests/test_write_lock.py::test_read_authoritative_status_returns_running PASSED [ 95%]
+team/tests/test_write_lock.py::test_read_authoritative_status_raises_on_unusable_source PASSED [ 96%]
+team/tests/test_write_lock.py::test_state_source_path_matches_objection_convention PASSED [ 97%]
+team/tests/test_write_lock.py::test_exempt_comment_is_documented_in_source PASSED [ 97%]
+team/tests/test_write_lock.py::test_selector_vs_state_assertion_is_documented_in_source PASSED [ 98%]
+team/tests/test_write_lock.py::test_module_does_not_import_or_patch_other_writers PASSED [ 99%]
+team/tests/test_write_lock.py::test_other_modules_are_untouched_by_this_task PASSED [100%]
+
+============================= 137 passed in 0.73s =============================
+[exit code: 0]

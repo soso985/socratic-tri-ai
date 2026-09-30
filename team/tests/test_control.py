@@ -30,7 +30,12 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 from control import ENV_DATA_ROOT, audit_log, dual_judge, gate, objection  # noqa: E402
-from control.dual_judge import IncompleteJudgment  # noqa: E402
+from control.dual_judge import (  # noqa: E402
+    AlreadySealed,
+    CommitmentMismatch,
+    IncompleteJudgment,
+    SealedVerdict,
+)
 
 
 # ---------------------------------------------------------------- 夹具
@@ -540,8 +545,7 @@ def test_mentor_response_is_registered(isolated_data_root):
 def test_mentor_response_registered_even_when_objection_judged_minor(isolated_data_root):
     """§8.6：异议被判「不重大」时，回应仍必须登记（留痕不因结果而豁免）。"""
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
+    _open_both(obj_id, major_mentor=False, major_controller=False)
     assert dual_judge.compare(obj_id) == {"outcome": "both_minor", "escalate": False}
 
     registered = objection.register_mentor_response(obj_id, "判定不重大，回应仍登记。")
@@ -562,61 +566,188 @@ def test_register_mentor_response_rejects_empty_text():
 # ================================================================ dual_judge
 
 
-def test_compare_raises_incomplete_when_only_mentor_submitted():
-    """必测项：单方提交时 compare 拒绝执行。"""
+def _verdict(major, rules=(), scope="无"):
+    return {"major": major, "hit_rules": list(rules), "scope": scope}
+
+
+def _sealed_file(root, obj_id, role):
+    return root / "agent_state" / "verdicts" / f"{obj_id}.{role}.sealed.json"
+
+
+def _opened_file(root, obj_id, role):
+    return root / "agent_state" / "verdicts" / f"{obj_id}.{role}.json"
+
+
+def _open_both(obj_id, *, major_mentor=True, major_controller=True, rules_mentor=(1,), rules_controller=(1,)):
+    """封存双方 + 揭示双方 → 开封（新语义下的完整链路）。"""
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(major_mentor, rules_mentor))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(major_controller, rules_controller))
+    dual_judge.reveal_verdict("mentor", obj_id, _verdict(major_mentor, rules_mentor))
+    dual_judge.reveal_verdict("controller", obj_id, _verdict(major_controller, rules_controller))
+
+
+def test_seal_writes_only_commitment_and_no_plaintext(isolated_data_root):
+    """封存文件**只含**承诺等 6 个字段；判决明文一个字都不在盘上。"""
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
-    with pytest.raises(IncompleteJudgment):
+    marker = "SEAL-MARKER-plaintext-must-never-hit-disk"
+    result = dual_judge.seal_verdict("mentor", obj_id, {"major": True, "hit_rules": [1], "scope": marker})
+
+    raw = _sealed_file(isolated_data_root, obj_id, "mentor").read_text(encoding="utf-8")
+    sealed = json.loads(raw)
+    assert set(sealed) == {"obj_id", "role", "commitment", "salt", "sealed_at", "state"}
+    assert sealed["state"] == "SEALED"
+    assert marker not in raw                      # 明文不在盘上
+    assert "major" not in raw and "scope" not in raw
+    assert result["commitment"] == sealed["commitment"] == dual_judge.commitment_of(sealed["salt"],
+        {"major": True, "hit_rules": [1], "scope": marker})
+
+
+def test_read_verdict_denied_after_single_seal(isolated_data_root):
+    """必测项：只封存一方时读取被拒（SealedVerdict）。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    with pytest.raises(SealedVerdict):
+        dual_judge.read_verdict("mentor", obj_id)
+    with pytest.raises(SealedVerdict):
+        dual_judge.read_verdict("controller", obj_id)
+
+
+def test_read_verdict_denied_after_both_seals_without_reveal(isolated_data_root):
+    """必测项：双份封存但未揭示 → 读取仍被拒。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(True, (1,)))
+    with pytest.raises(SealedVerdict):
+        dual_judge.read_verdict("mentor", obj_id)
+    assert not _opened_file(isolated_data_root, obj_id, "mentor").exists()
+    assert not _opened_file(isolated_data_root, obj_id, "controller").exists()
+
+
+def test_compare_denied_after_single_seal(isolated_data_root):
+    """必测项：只封存一方就 compare → SealedVerdict。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    with pytest.raises(SealedVerdict):
         dual_judge.compare(obj_id)
 
 
-def test_compare_raises_incomplete_when_only_controller_submitted():
+def test_compare_denied_after_both_seals_without_reveal(isolated_data_root):
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("controller", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
-    with pytest.raises(IncompleteJudgment):
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(True, (1,)))
+    with pytest.raises(SealedVerdict):
         dual_judge.compare(obj_id)
 
 
-def test_compare_raises_incomplete_when_no_verdict_submitted():
+def test_reveal_denied_without_seal(isolated_data_root):
+    """必测项：未封存就揭示 → SealedVerdict。"""
     obj_id = _submit()["obj_id"]
+    with pytest.raises(SealedVerdict):
+        dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    assert not _sealed_file(isolated_data_root, obj_id, "mentor").exists()
+
+
+def test_reveal_with_wrong_verdict_raises_mismatch_and_writes_no_plaintext(isolated_data_root):
+    """必测项：揭示内容与承诺不符 → CommitmentMismatch，且**不落任何明文**。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,), "原始判定"))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(True, (1,), "原始判定"))
+
+    with pytest.raises(CommitmentMismatch):
+        dual_judge.reveal_verdict("mentor", obj_id, _verdict(False, (2,), "被篡改的判定"))
+
+    verdicts_dir = isolated_data_root / "agent_state" / "verdicts"
+    assert not _opened_file(isolated_data_root, obj_id, "mentor").exists()
+    assert not _opened_file(isolated_data_root, obj_id, "controller").exists()
+    assert not (verdicts_dir / f"{obj_id}.comparison.json").exists()
+    # 封存状态也不得被这次失败改动
+    assert json.loads(_sealed_file(isolated_data_root, obj_id, "mentor").read_text(encoding="utf-8"))["state"] == "SEALED"
+
+
+def test_single_reveal_writes_no_plaintext(isolated_data_root):
+    """必测项：只有一方揭示时，磁盘上不得出现任何明文。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(True, (1,)))
+    dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))
+
+    verdicts_dir = isolated_data_root / "agent_state" / "verdicts"
+    assert not _opened_file(isolated_data_root, obj_id, "mentor").exists()
+    assert not _opened_file(isolated_data_root, obj_id, "controller").exists()
+    assert not (verdicts_dir / f"{obj_id}.comparison.json").exists()
+    with pytest.raises(SealedVerdict):
+        dual_judge.read_verdict("mentor", obj_id)
+    # 封存文件本身仍只含承诺（无明文）
+    raw = _sealed_file(isolated_data_root, obj_id, "mentor").read_text(encoding="utf-8")
+    assert '"major"' not in raw and "hit_rules" not in raw
+
+
+def test_read_verdict_available_only_after_both_reveals(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    _open_both(obj_id, major_mentor=True, major_controller=False)
+    mentor = dual_judge.read_verdict("mentor", obj_id)
+    controller = dual_judge.read_verdict("controller", obj_id)
+    assert mentor["verdict"]["major"] is True
+    assert controller["verdict"]["major"] is False
+    assert mentor["state"] == "OPENED" and controller["state"] == "OPENED"
+
+
+def test_reveal_is_idempotent(isolated_data_root):
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    dual_judge.seal_verdict("controller", obj_id, _verdict(True, (1,)))
+    dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    dual_judge.reveal_verdict("mentor", obj_id, _verdict(True, (1,)))   # 幂等
+    dual_judge.reveal_verdict("controller", obj_id, _verdict(True, (1,)))
+    assert dual_judge.compare(obj_id) == {"outcome": "both_major", "escalate": True}
+
+
+def test_reseal_is_rejected(isolated_data_root):
+    """封存不可覆盖：防止开封后偷换结论。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
+    with pytest.raises(AlreadySealed):
+        dual_judge.seal_verdict("mentor", obj_id, _verdict(False, (), "换一个"))
+
+
+def test_sealed_verdict_is_also_incomplete_judgment(isolated_data_root):
+    """兼容 v2 验收项 5：``except IncompleteJudgment`` 仍能捕获新的 SealedVerdict。"""
+    obj_id = _submit()["obj_id"]
+    dual_judge.seal_verdict("mentor", obj_id, _verdict(True, (1,)))
     with pytest.raises(IncompleteJudgment):
         dual_judge.compare(obj_id)
 
 
 def test_compare_both_major_escalates():
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
+    _open_both(obj_id, major_mentor=True, major_controller=True)
     assert dual_judge.compare(obj_id) == {"outcome": "both_major", "escalate": True}
 
 
 def test_compare_both_minor_does_not_escalate():
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
+    _open_both(obj_id, major_mentor=False, major_controller=False, rules_mentor=(), rules_controller=())
     assert dual_judge.compare(obj_id) == {"outcome": "both_minor", "escalate": False}
 
 
 def test_compare_divergent_escalates():
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": True, "hit_rules": [4], "scope": "L0"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
+    _open_both(obj_id, major_mentor=True, major_controller=False)
     assert dual_judge.compare(obj_id) == {"outcome": "divergent", "escalate": True}
 
 
-def test_verdicts_are_written_to_separate_files(isolated_data_root):
+def test_opened_verdicts_are_written_to_separate_files(isolated_data_root):
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": True, "hit_rules": [1], "scope": "L0"})
-    verdicts_dir = isolated_data_root / "agent_state" / "verdicts"
-    assert (verdicts_dir / f"{obj_id}.mentor.json").exists()
-    assert (verdicts_dir / f"{obj_id}.controller.json").exists()
+    _open_both(obj_id)
+    assert _opened_file(isolated_data_root, obj_id, "mentor").exists()
+    assert _opened_file(isolated_data_root, obj_id, "controller").exists()
+    assert _sealed_file(isolated_data_root, obj_id, "mentor").exists()
 
 
 def test_comparison_is_archived_with_both_verdicts(isolated_data_root):
     obj_id = _submit()["obj_id"]
-    dual_judge.submit_verdict("mentor", obj_id, {"major": True, "hit_rules": [3], "scope": "路径白名单"})
-    dual_judge.submit_verdict("controller", obj_id, {"major": False, "hit_rules": [], "scope": "无"})
+    _open_both(obj_id, major_mentor=True, major_controller=False,
+               rules_mentor=(3,), rules_controller=())
     dual_judge.compare(obj_id)
     archived = json.loads(
         (isolated_data_root / "agent_state" / "verdicts" / f"{obj_id}.comparison.json").read_text(encoding="utf-8")
@@ -626,18 +757,27 @@ def test_comparison_is_archived_with_both_verdicts(isolated_data_root):
     assert archived["controller_verdict"]["major"] is False
 
 
-def test_submit_verdict_rejects_unknown_role():
+def test_submit_verdict_alias_now_seals_without_plaintext(isolated_data_root):
+    """旧名 ``submit_verdict`` 语义已改为封存：不再直接落明文。"""
     obj_id = _submit()["obj_id"]
-    with pytest.raises(ValueError):
-        dual_judge.submit_verdict("owner", obj_id, {"major": True, "hit_rules": [], "scope": "无"})
+    dual_judge.submit_verdict("mentor", obj_id, _verdict(True, (1,), "别名封存"))
+    raw = _sealed_file(isolated_data_root, obj_id, "mentor").read_text(encoding="utf-8")
+    assert "别名封存" not in raw
+    assert not _opened_file(isolated_data_root, obj_id, "mentor").exists()
 
 
-def test_submit_verdict_rejects_malformed_verdict():
+def test_seal_rejects_unknown_role():
     obj_id = _submit()["obj_id"]
     with pytest.raises(ValueError):
-        dual_judge.submit_verdict("mentor", obj_id, {"major": True})
+        dual_judge.seal_verdict("owner", obj_id, _verdict(True, ()))
+
+
+def test_seal_rejects_malformed_verdict():
+    obj_id = _submit()["obj_id"]
     with pytest.raises(ValueError):
-        dual_judge.submit_verdict("mentor", obj_id, {"major": "yes", "hit_rules": [], "scope": "无"})
+        dual_judge.seal_verdict("mentor", obj_id, {"major": True})
+    with pytest.raises(ValueError):
+        dual_judge.seal_verdict("mentor", obj_id, {"major": "yes", "hit_rules": [], "scope": "无"})
 
 
 def test_compare_rejects_empty_obj_id():

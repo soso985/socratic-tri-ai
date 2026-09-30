@@ -375,11 +375,16 @@ def test_module_does_not_import_or_patch_other_writers():
 
 
 def test_other_modules_are_untouched_by_this_task():
-    """本次不得改 audit_log.py / objection.py / dual_judge.py 一个字符。"""
+    """不得改 ``audit_log.py`` / ``objection.py`` / ``gate.py`` 一个字符。
+
+    注：``dual_judge.py`` **自 task-8 起是授权变更对象**（§8.5 封存协议 commit→reveal），
+    故从本守卫中移出；它当前的形态由 ``test_control.py`` 的 dual_judge 测试覆盖。
+    本守卫仍然守着另外三个模块——这也是 task-6 时它能第一时间抓到 dual_judge 被改的原因。
+    """
     expected = {
         "audit_log.py": "c7aab23807a6637b364bdbcc612d8a95503bfa868919f26617112542784473bc",
         "objection.py": "1328d36f847bbf9a3eb2e6fda2d58a8ac663dde173c6ebce4436874431426f09",
-        "dual_judge.py": "296aba01adcb48a27f131d9ed81ff4a22a3225959079c08f92a0cad1e098e4ee",
+        "gate.py": "2c778d3c89502589763554000c547bb851a2ea71c0e5d01a5e557d27ba53c98a",
     }
     for name, digest in expected.items():
         actual = hashlib.sha256((_SRC / "control" / name).read_bytes()).hexdigest()
