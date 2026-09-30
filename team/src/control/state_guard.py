@@ -63,6 +63,10 @@ __all__ = [
     "ApprovalMismatch",
     "ApprovalConsumed",
     "IllegalTransition",
+    "CredentialNotAllowed",
+    "CredentialNotFound",
+    "CredentialConsumed",
+    "CredentialMismatch",
 ]
 
 #: 暂停类状态（任务描述给定）
@@ -125,6 +129,22 @@ class ApprovalConsumed(TransitionDenied):
 
 class IllegalTransition(TransitionDenied):
     """跃迁不在 §10.1 跃迁表内（非解暂停路径）。"""
+
+
+class CredentialNotAllowed(TransitionDenied):
+    """规则凭证**只能开 BLOCKED 这一扇门**：其它暂停态（ESCALATED / CHANGE_PENDING / 等用户裁决）一律拒绝。"""
+
+
+class CredentialNotFound(TransitionDenied):
+    """按 ``cred_id`` 在 ``agent_state/rule_credentials/`` 下**唯一**匹配失败（0 个或多个）——不猜。"""
+
+
+class CredentialConsumed(TransitionDenied):
+    """该规则凭证已被消费（一次性，用一次就作废）。"""
+
+
+class CredentialMismatch(TransitionDenied):
+    """凭证与本次跃迁不匹配（``cred_id`` / ``task_id`` / ``issued_by`` / ``basis`` / ``outcome``）。"""
 
 
 # ---------------------------------------------------------------- 内部工具
@@ -304,6 +324,83 @@ def _consume_approval(task_id: str, approval_id) -> dict:
     return record
 
 
+def _consume_rule_credential(task_id: str, rule_credential_id, status) -> dict:
+    """校验并**一次性消费**规则凭证（GUARD-01 消费端）。
+
+    **规则凭证只能开 ``BLOCKED`` 这一扇门**：下列五条**全部**满足才放行，任一不满足即拒绝，
+    且**绝不改动状态文件**（也绝不改动凭证文件）。
+
+    ① 当前状态**恰好**是 ``BLOCKED``（``ESCALATED`` / ``CHANGE_PENDING`` / 「等用户裁决」→ 一律拒绝）；
+    ② 在 ``agent_state/rule_credentials/`` 下按 ``*.<cred_id>.json`` **唯一**匹配（0 个或多个都拒绝，不猜）；
+    ③ 确实是 :func:`control.dual_judge.compare` 签发的（``issued_by == "dual_judge.compare"``，
+       且 ``basis`` 表明 §8.5 both_minor、``outcome == "both_minor"``）；
+    ④ ``consumed`` 为假（未消费）；
+    ⑤ 凭证的 ``task_id`` 与本次要改的任务一致。
+
+    ⚠ **本函数不解决"凭证文件可被直接伪造"**——那是 Owner 明示排除的已知边界（见 task-11 硬约束）。
+    """
+    # ① 只有 BLOCKED 这扇门
+    if status != "BLOCKED":
+        raise CredentialNotAllowed(
+            f"规则凭证只能用于离开 BLOCKED，当前状态是 {status!r} → 拒绝，且不改状态文件。"
+        )
+
+    # 参数基本校验（顺带挡住 glob 元字符/路径穿越）
+    if not isinstance(rule_credential_id, str) or not rule_credential_id.strip():
+        raise CredentialNotFound(
+            f"rule_credential_id 必须是非空字符串，收到 {rule_credential_id!r} → 拒绝。"
+        )
+    cred_id = rule_credential_id.strip()
+    if any(ch in cred_id for ch in "*/\\?[]") or ".." in cred_id:
+        raise CredentialNotFound(f"rule_credential_id 含非法字符：{cred_id!r} → 拒绝。")
+
+    # ② 唯一匹配（0 个或多个 → 拒绝）
+    directory = data_root() / "agent_state" / "rule_credentials"
+    matches = sorted(directory.glob(f"*.{cred_id}.json")) if directory.is_dir() else []
+    if len(matches) != 1:
+        raise CredentialNotFound(
+            f"规则凭证按 cred_id={cred_id!r} 唯一匹配失败：命中 {len(matches)} 个 → "
+            "拒绝（fail-closed，不猜）→ 且不改状态文件。"
+        )
+    path = matches[0]
+    record = _load_json(path, {})
+    if not isinstance(record, dict):
+        raise CredentialMismatch(f"规则凭证内容不是 JSON 对象：{path} → 拒绝。")
+
+    # ③ 确实由 compare() 签发
+    if record.get("cred_id") != cred_id:
+        raise CredentialMismatch(
+            f"凭证记录的 cred_id={record.get('cred_id')!r} 与请求的 {cred_id!r} 不符 → 拒绝。"
+        )
+    if record.get("issued_by") != "dual_judge.compare":
+        raise CredentialMismatch(
+            f"凭证 issued_by={record.get('issued_by')!r} 不是 'dual_judge.compare' → 拒绝。"
+        )
+    basis = str(record.get("basis", ""))
+    if "§8.5" not in basis or "both_minor" not in basis or record.get("outcome") != "both_minor":
+        raise CredentialMismatch(
+            f"凭证未表明「§8.5 both_minor」：basis={basis!r}、outcome={record.get('outcome')!r} → 拒绝。"
+        )
+
+    # ④ 未消费
+    if record.get("consumed") is True:
+        raise CredentialConsumed(
+            f"规则凭证 {cred_id} 已被消费（一次性，用一次就作废）→ 拒绝重放，且不改状态文件。"
+        )
+
+    # ⑤ task_id 一致
+    if record.get("task_id") != task_id:
+        raise CredentialMismatch(
+            f"凭证 task_id={record.get('task_id')!r} 与目标任务 {task_id!r} 不一致 → 拒绝，且不改状态文件。"
+        )
+
+    record["consumed"] = True
+    record["consumed_at"] = _now()
+    record["consumed_by"] = "state_guard.request_transition"
+    _save_json(path, record)   # 先消费（fail-closed）
+    return record
+
+
 # ---------------------------------------------------------------- 对外接口
 
 
@@ -380,20 +477,28 @@ def read_approval(task_id, approval_id) -> dict:
     return _load_json(path, {})
 
 
-def request_transition(task_id, to_state, *, approval_id=None) -> dict:
+def request_transition(task_id, to_state, *, approval_id=None, rule_credential_id=None) -> dict:
     """请求把任务状态切到 ``to_state``。
 
     规则（核心不变量）
     ------------------
-    * **当前状态属于暂停类（或无法判定）→ 必须先消费一条 Owner 批准记录**，
-      否则抛 :class:`ApprovalRequired` / :class:`ApprovalNotFound` /
-      :class:`ApprovalMismatch` / :class:`ApprovalConsumed`，**且一个字节都不写**
-      （``task_state.json`` 不变）。
+    * **当前状态属于暂停类（或无法判定）→ 必须先拿到一种授权**，否则抛
+      :class:`ApprovalRequired`，**且一个字节都不写**（``task_state.json`` 不变）。两种授权：
+      1. ``approval_id``：Owner 批准记录（既有路径，行为不变）；
+      2. ``rule_credential_id``：**规则凭证**（GUARD-01 消费端，task-11）——
+         **只能开 ``BLOCKED`` 这一扇门**，且五条全满足才放行：
+         ①当前状态恰好 ``BLOCKED``；②按 ``cred_id`` 在 ``agent_state/rule_credentials/``
+         下唯一匹配；③确为 :func:`control.dual_judge.compare` 签发（``issued_by`` +
+         ``basis`` 表明 §8.5 both_minor）；④``consumed`` 为假；⑤``task_id`` 一致。
+         任一不满足 → 抛 :class:`CredentialNotAllowed` / :class:`CredentialNotFound` /
+         :class:`CredentialConsumed` / :class:`CredentialMismatch`，**绝不改状态文件**。
+         用一次即作废（落盘 ``consumed:true``）。
+         两者同时给出时**以 ``approval_id`` 为准**（既有路径优先）。
     * 非暂停状态的跃迁：按 §10.1 跃迁表校验（复用 :mod:`control.gate` 的常量），
       合法则执行，**不追加批准要求**（正常运行不该被 Owner 打断）。
     * 任何一次**状态改写**都会落审计日志（复用 :func:`audit_log.append`）。
 
-    返回值含 ``approval_required`` 便于调用方与测试断言。
+    返回值含 ``approval_required`` / ``rule_credential_consumed`` 便于调用方与测试断言。
     """
     task_id = _require_task_id(task_id)
     if not isinstance(to_state, str) or to_state not in KNOWN_STATES:
@@ -403,7 +508,38 @@ def request_transition(task_id, to_state, *, approval_id=None) -> dict:
     # 无法判定当前状态时按"暂停"处理（fail-closed）：绝不因读不到状态就放行
     leaving_pause = (status is None) or (status in PAUSED_STATES)
 
+    # ---- 路径 1：规则凭证（task-11 · GUARD-01 消费端）----
+    # 只要调用方给出凭证，就先做「**只能用来离开 BLOCKED**」的判定：
+    # 当前状态不是 BLOCKED（含 ESCALATED / CHANGE_PENDING / 「等用户裁决」等）
+    # 一律抛 CredentialNotAllowed —— **不被静默忽略、也不改状态文件**。
+    # 注意：这里刻意不放在下面的 `leaving_pause` 分支内，因为 CHANGE_PENDING
+    # 不在 PAUSED_STATES 中，否则凭证会被"绕过"（既不消费也不拒绝）。
+    if approval_id is None and rule_credential_id is not None:
+        try:
+            credential = _consume_rule_credential(task_id, rule_credential_id, status)
+        except TransitionDenied as exc:
+            _audit_denial(
+                task_id,
+                "transition_denied",
+                to_state,
+                f"{type(exc).__name__}: {exc}",
+                source=status,
+                rule_credential_id=rule_credential_id,
+            )
+            raise
+        result = _write_status(
+            task_id,
+            to_state,
+            reason=f"规则凭证（{credential['cred_id']}，§8.5 both_minor）解暂停",
+            extra={"rule_credential_id": credential["cred_id"],
+                   "credential_basis": credential.get("basis")},
+        )
+        return dict(result, approval_required=False, approval_id=None,
+                    rule_credential_id=credential["cred_id"],
+                    rule_credential_consumed=True)
+
     if leaving_pause:
+        # ---- 路径 2：Owner 批准记录（既有路径，行为不变）----
         try:
             approval = _consume_approval(task_id, approval_id)
         except TransitionDenied as exc:
@@ -423,7 +559,8 @@ def request_transition(task_id, to_state, *, approval_id=None) -> dict:
             extra={"approved_by": approval["approved_by"], "approval_id": approval["approval_id"],
                    "approval_scope": approval.get("scope")},
         )
-        return dict(result, approval_required=True, approval_id=approval["approval_id"])
+        return dict(result, approval_required=True, approval_id=approval["approval_id"],
+                    rule_credential_id=None, rule_credential_consumed=False)
 
     if not _table_allows(status, to_state):
         exc = IllegalTransition(
@@ -434,4 +571,5 @@ def request_transition(task_id, to_state, *, approval_id=None) -> dict:
         raise exc
 
     result = _write_status(task_id, to_state, reason="常规跃迁（非解暂停，无需批准）")
-    return dict(result, approval_required=False, approval_id=None)
+    return dict(result, approval_required=False, approval_id=None,
+                rule_credential_id=None, rule_credential_consumed=False)

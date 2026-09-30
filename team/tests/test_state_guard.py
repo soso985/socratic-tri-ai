@@ -20,12 +20,16 @@ _SRC = Path(__file__).resolve().parents[1] / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from control import ENV_DATA_ROOT, audit_log, gate, state_guard  # noqa: E402
+from control import ENV_DATA_ROOT, audit_log, dual_judge, gate, objection, state_guard  # noqa: E402
 from control.state_guard import (  # noqa: E402
     ApprovalConsumed,
     ApprovalMismatch,
     ApprovalNotFound,
     ApprovalRequired,
+    CredentialConsumed,
+    CredentialMismatch,
+    CredentialNotAllowed,
+    CredentialNotFound,
     IllegalTransition,
     InvalidApproval,
 )
@@ -348,3 +352,192 @@ def test_denials_are_audited_without_touching_state(isolated_data_root):
     denial = [e for e in events if e["action"] == "transition_denied"]
     assert len(denial) == 1
     assert denial[0]["wrote_state"] is False
+
+
+# ================================================================ 规则凭证消费端（task-11 · GUARD-01）
+
+
+def _cred_dir(root: Path) -> Path:
+    return root / "agent_state" / "rule_credentials"
+
+
+def _issue_credential(root: Path, *, task_id: str = TASK) -> str:
+    """用**真实的 compare()**（both_minor）签发一张规则凭证，返回 ``cred_id``。
+
+    签发时任务须处于 ``BLOCKED``（签发端不允许「等用户裁决」）。
+    """
+    _set_state(root, "BLOCKED", task_id)
+    obj_id = objection.submit(task_id, "v2", "premise", "消费端测试用异议", "见测试", "不主张失效")["obj_id"]
+    _set_state(root, "BLOCKED", task_id)   # objection.submit 之后确保是 BLOCKED
+    minor = {"major": False, "hit_rules": [], "scope": "不重大"}
+    dual_judge.seal_verdict("mentor", obj_id, minor)
+    dual_judge.seal_verdict("controller", obj_id, minor)
+    dual_judge.reveal_verdict("mentor", obj_id, minor)
+    dual_judge.reveal_verdict("controller", obj_id, minor)
+    result = dual_judge.compare(obj_id)
+    assert result["rule_credential"] is not None, result["rule_credential_skipped_reason"]
+    return result["cred_id"]
+
+
+def _cred_file(root: Path, cred_id: str) -> Path:
+    matches = sorted(_cred_dir(root).glob(f"*.{cred_id}.json"))
+    assert len(matches) == 1, matches
+    return matches[0]
+
+
+def test_credential_unlocks_blocked_and_is_consumed(isolated_data_root):
+    """S1：BLOCKED + 有效未消费凭证 → 放行，状态改变，凭证被标记 consumed:true。"""
+    cred_id = _issue_credential(isolated_data_root)
+    assert json.loads(_cred_file(isolated_data_root, cred_id).read_text(encoding="utf-8"))["consumed"] is False
+
+    result = state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert result["status"] == "RUNNING"
+    assert result["rule_credential_consumed"] is True
+    assert state_guard.current_status(TASK) == "RUNNING"
+    record = json.loads(_cred_file(isolated_data_root, cred_id).read_text(encoding="utf-8"))
+    assert record["consumed"] is True and record["consumed_at"]
+
+
+def test_credential_replay_is_rejected(isolated_data_root):
+    """S2：同一张凭证用第二次 → 拒绝且状态文件不变。"""
+    cred_id = _issue_credential(isolated_data_root)
+    state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    _set_state(isolated_data_root, "BLOCKED")
+    path = _state_file(isolated_data_root)
+    before = _sha(path)
+    with pytest.raises(CredentialConsumed):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert _sha(path) == before
+    assert state_guard.current_status(TASK) == "BLOCKED"
+
+
+@pytest.mark.parametrize("paused_state", ["ESCALATED", "CHANGE_PENDING", "等用户裁决"])
+def test_credential_rejected_for_every_other_paused_state(isolated_data_root, paused_state):
+    """S3/S4/S5：规则凭证**只能开 BLOCKED 这一扇门**——其它暂停态即使带有效凭证也拒绝。"""
+    cred_id = _issue_credential(isolated_data_root)          # 在 BLOCKED 下签发（有效、未消费）
+    _set_state(isolated_data_root, paused_state)             # 再切到其它暂停态
+    path = _state_file(isolated_data_root)
+    before = _sha(path)
+    with pytest.raises(CredentialNotAllowed):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert _sha(path) == before
+    assert state_guard.current_status(TASK) == paused_state
+    # 凭证**不得**被这次失败的尝试消费掉
+    assert json.loads(_cred_file(isolated_data_root, cred_id).read_text(encoding="utf-8"))["consumed"] is False
+
+
+def test_credential_with_mismatched_task_id_is_rejected(isolated_data_root):
+    """S6：凭证的 task_id 与目标任务不一致 → 拒绝。"""
+    cred_id = _issue_credential(isolated_data_root, task_id="TASK-OTHER")
+    _set_state(isolated_data_root, "BLOCKED")                # 本次目标是 TASK-001
+    path = _state_file(isolated_data_root)
+    before = _sha(path)
+    with pytest.raises(CredentialMismatch):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert _sha(path) == before
+    assert json.loads(_cred_file(isolated_data_root, cred_id).read_text(encoding="utf-8"))["consumed"] is False
+
+
+def test_unknown_credential_id_is_rejected(isolated_data_root):
+    """S7：cred_id 不存在 → 拒绝（0 个匹配，fail-closed）。"""
+    path = _set_state(isolated_data_root, "BLOCKED")
+    before = _sha(path)
+    with pytest.raises(CredentialNotFound):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id="RC-20991231-999")
+    assert _sha(path) == before
+
+
+def test_ambiguous_credential_match_is_rejected(isolated_data_root):
+    """② 唯一匹配：同名 cred_id 出现两份 → 拒绝（不猜）。"""
+    cred_id = _issue_credential(isolated_data_root)
+    source = _cred_file(isolated_data_root, cred_id)
+    (source.parent / f"ANOTHER-OBJ.{cred_id}.json").write_bytes(source.read_bytes())
+    path = _state_file(isolated_data_root)
+    before = _sha(path)
+    with pytest.raises(CredentialNotFound):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert _sha(path) == before
+
+
+@pytest.mark.parametrize("bad_id", ["", "   ", "RC-*", "../x", "RC-20260930-001/../x"])
+def test_malformed_credential_id_is_rejected(isolated_data_root, bad_id):
+    path = _set_state(isolated_data_root, "BLOCKED")
+    before = _sha(path)
+    with pytest.raises(CredentialNotFound):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=bad_id)
+    assert _sha(path) == before
+
+
+def test_none_credential_means_not_provided(isolated_data_root):
+    """``rule_credential_id=None`` 等同于"没给凭证" → 仍是既有行为 ApprovalRequired（S8）。"""
+    path = _set_state(isolated_data_root, "BLOCKED")
+    before = _sha(path)
+    with pytest.raises(ApprovalRequired):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=None)
+    assert _sha(path) == before
+
+
+def test_credential_not_issued_by_compare_is_rejected(isolated_data_root):
+    """③ 必须是 compare() 签发的：issued_by 被改动 → 拒绝。"""
+    cred_id = _issue_credential(isolated_data_root)
+    path = _cred_file(isolated_data_root, cred_id)
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["issued_by"] = "someone.else"
+    path.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(CredentialMismatch):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+
+
+def test_credential_with_wrong_basis_is_rejected(isolated_data_root):
+    """③ basis/outcome 必须表明 §8.5 both_minor。"""
+    cred_id = _issue_credential(isolated_data_root)
+    path = _cred_file(isolated_data_root, cred_id)
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["basis"] = "§8.5 both_major"
+    path.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(CredentialMismatch):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+
+
+def test_no_authorization_still_raises_approval_required(isolated_data_root):
+    """S8：两个都没给 → ApprovalRequired（既有行为不变）。"""
+    path = _set_state(isolated_data_root, "BLOCKED")
+    before = _sha(path)
+    with pytest.raises(ApprovalRequired):
+        state_guard.request_transition(TASK, "RUNNING")
+    assert _sha(path) == before
+
+
+def test_owner_approval_path_still_works(isolated_data_root):
+    """S9：Owner 批准路径仍可用（既有行为不变）。"""
+    _set_state(isolated_data_root, "BLOCKED")
+    approval_id = _grant()
+    result = state_guard.request_transition(TASK, "RUNNING", approval_id=approval_id)
+    assert result["status"] == "RUNNING" and result["approval_required"] is True
+    assert state_guard.read_approval(TASK, approval_id)["consumed"] is True
+
+
+def test_approval_takes_precedence_when_both_provided(isolated_data_root):
+    """两者同时给出时以 approval_id 为准（既有路径优先），凭证不被消费。"""
+    cred_id = _issue_credential(isolated_data_root)
+    approval_id = _grant()
+    result = state_guard.request_transition(TASK, "RUNNING", approval_id=approval_id,
+                                            rule_credential_id=cred_id)
+    assert result["approval_required"] is True
+    assert result["rule_credential_consumed"] is False
+    assert json.loads(_cred_file(isolated_data_root, cred_id).read_text(encoding="utf-8"))["consumed"] is False
+
+
+def test_credential_denials_are_audited_without_touching_state(isolated_data_root):
+    path = _set_state(isolated_data_root, "ESCALATED")
+    before = _sha(path)
+    cred_id = _issue_credential(isolated_data_root)   # 先在 BLOCKED 下签发，再切回 ESCALATED
+    _set_state(isolated_data_root, "ESCALATED")
+    with pytest.raises(CredentialNotAllowed):
+        state_guard.request_transition(TASK, "RUNNING", rule_credential_id=cred_id)
+    assert _sha(path) == before
+    log = isolated_data_root / "agent_state" / "audit_log.jsonl"
+    events = [json.loads(line)["event"] for line in log.read_text(encoding="utf-8").splitlines() if line.strip()]
+    denial = [e for e in events if e.get("action") == "transition_denied"
+              and e.get("rule_credential_id") == cred_id]
+    assert denial and denial[-1]["wrote_state"] is False
