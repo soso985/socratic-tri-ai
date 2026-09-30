@@ -1,0 +1,25 @@
+{
+  "schema": "task-internal/v1",
+  "obj_id": "OBJ-20260930-001",
+  "outcome": "both_major",
+  "escalate": true,
+  "compared_at": "2026-09-30T08:46:28+08:00",
+  "mentor_verdict": {
+    "major": true,
+    "hit_rules": [
+      "clause-1",
+      "clause-7"
+    ],
+    "scope": "命中共用清单第 1 条（异议涉及 L0 需求）与第 7 条（change_policy 命中且 owner 指向用户）：异议的 F-03 分支要求建立 REQ-T1 的层级标记与 L0 关联；依 §7.2-精度 1，层级标记固化于需求记录本身，修改层级标记等同于修改 L0，须走 §6 用户决策。Mentor 已建 charter/REQ-records.md 并以「不创设新需求、仅登记已批准基线」为由自决，此自决本身应由 Owner 确认。其余五条（clause-2/3/4/5/6）均未命中。hit_rules 命名空间为临时口径（承接风险 R-2）。"
+  },
+  "controller_verdict": {
+    "major": true,
+    "hit_rules": [
+      "clause-7"
+    ],
+    "scope": "判定对象=OBJ-20260930-001（kind=cannot_execute，针对 TASK-001 v1；登记时间 2026-09-30T08:40:52+08:00；记录 team/proposals/OBJ-20260930-001.md）。判定范围=该异议的主张、证据 A~D 与失效指认的并集（异议全文 team/proposals/objection-executor-TASK-001-v1-20260930.md 第2、4节）。仅判是否达到升级阈值，不判异议在技术上是否成立。逐条比对 V1.4 §8.5 共用清单：第1条未命中——异议落在 L1 需求 REQ-T1（team/charter/REQ-records.md 标记 REQ-T1=L1）与 L2 契约条文，L0-01~L0-07 的陈述未被触及或变更。第2条未命中——未主张变更 L1 架构（ARC-001 未变）或 M1 里程碑，亦未切断 L0 追溯关系（REQ-records.md 反而建立了 REQ-T1→L0-06 追溯）。第3条未命中——处置落点 team/milestones/、team/charter/、team/architecture/ 由 Mentor 以契约签发与架构职责实施；异议提交时的手工留痕越出 task-2 三处写入限制一事，已由 Mentor 书面裁定「成立且必要，不予追究」（OBJ-20260930-001.md 第四节）。第4条未命中——不涉及 §12.2 六类枚举动作（异议全文第7节；v2 action_tags 记为 §12.2 无命中）。第5条未命中——TASK-001 未进入 REWORK，无返工计数，未见预算超限记录（返工上限 2 次，v1 L102 / v2 L173）。第6条未命中——不涉及不可逆操作或无法确认的外部副作用（v1 L10 / v2 L13「不可逆性：无」，回滚=删除新增文件）。第7条命中——处置使变更落在 change_policy 的 owner 指向用户分支：① 契约 change_policy 第三项「超出 Mentor 授权 → 升级 Owner（§8.3）」（v1 L110 / v2 L181）；② team/architecture/BASELINE-DEFECTS.md 未决项（L52~54）自述该处置「只在本团队内生效，未修订 V1.4 正文；建议在 V1.5 中正式修订 §10.1，或由 Owner 裁决是否接受本解释」，即最终成立与否 pending Owner；③ V1.4 §16.1 显示基线条款修订的批准主体为 Owner；④ 异议自身将 F-03 的权属记为 Mentor ＋ Owner（异议全文第3节），指向 charter/ 需求记录层，而 §7.2-精度1 规定层级标记的修改等同于修改 L0、须走 §6 用户决策（team/charter/REQ-records.md L53；同文件 L12~14 保留 Owner 否决）。影响范围=OBJ-20260930-001 的处置结论、TASK-001 v2 的跃迁表追加项、BASELINE-DEFECTS.md 的未决项、REQ-records.md 的 L0/L1 登记、M1 里程碑 §13 集成验收的证据链。阈值结论=达到升级阈值：是（命中第 7 条，命中任一即为重大）。附注：第 1 条存在另一种读法（以处置新建的 L0 标记层文件为由判命中），本次未采纳，分歧点已在 team/evidence/ctrl-review-001.md 中记录备查。"
+  },
+  "mentor_submitted_at": "2026-09-30T08:40:52+08:00",
+  "controller_submitted_at": "2026-09-30T08:43:46+08:00",
+  "basis": "§8.5 共用清单（命中任一即为重大）；比对由确定性程序在双方均提交后执行"
+}

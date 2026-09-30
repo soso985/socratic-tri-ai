@@ -1,0 +1,14 @@
+{
+  "schema": "task-internal/v1",
+  "obj_id": "OBJ-20260930-001",
+  "role": "mentor",
+  "verdict": {
+    "major": true,
+    "hit_rules": [
+      "clause-1",
+      "clause-7"
+    ],
+    "scope": "命中共用清单第 1 条（异议涉及 L0 需求）与第 7 条（change_policy 命中且 owner 指向用户）：异议的 F-03 分支要求建立 REQ-T1 的层级标记与 L0 关联；依 §7.2-精度 1，层级标记固化于需求记录本身，修改层级标记等同于修改 L0，须走 §6 用户决策。Mentor 已建 charter/REQ-records.md 并以「不创设新需求、仅登记已批准基线」为由自决，此自决本身应由 Owner 确认。其余五条（clause-2/3/4/5/6）均未命中。hit_rules 命名空间为临时口径（承接风险 R-2）。"
+  },
+  "submitted_at": "2026-09-30T08:40:52+08:00"
+}

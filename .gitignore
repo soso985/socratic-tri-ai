@@ -8,3 +8,9 @@ _extract/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Python（团队实验的控制程序运行产物）
+__pycache__/
+*.py[cod]
+.pytest_cache/
+

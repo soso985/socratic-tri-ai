@@ -1,0 +1,12 @@
+{
+  "schema": "task-internal/v1",
+  "tasks": {
+    "TASK-001": {
+      "status": "BLOCKED",
+      "previous_status": null,
+      "contract_version": "v1",
+      "updated_at": "2026-09-30T08:40:52+08:00"
+    }
+  },
+  "updated_at": "2026-09-30T08:40:52+08:00"
+}
